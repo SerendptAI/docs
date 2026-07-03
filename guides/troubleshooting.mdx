@@ -37,13 +37,6 @@ description: "Fixes for the most common embedding issues."
     handoff.
   </Accordion>
 
-  <Accordion title="Voice input isn't available" icon="microphone-slash">
-    - Browsers only expose the microphone in a **secure context**: the page must
-      be served over **HTTPS** (or `localhost`).
-    - The visitor must **grant microphone permission**. If they previously denied
-      it, they'll need to re-enable it in site settings.
-  </Accordion>
-
   <Accordion title="File uploads are rejected" icon="file-circle-xmark">
     - Only **JPEG, PNG, GIF, WebP,** and **PDF** are accepted; the backend verifies
       image types by magic bytes, so renamed files still fail.

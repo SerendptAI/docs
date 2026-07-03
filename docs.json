@@ -38,8 +38,7 @@
             "group": "Features",
             "pages": [
               "features/chat",
-              "features/file-uploads",
-              "features/voice"
+              "features/file-uploads"
             ]
           },
           {

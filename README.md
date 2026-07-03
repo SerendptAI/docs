@@ -24,7 +24,7 @@ swiftagent-docs/
 ├── quickstart.mdx
 ├── installation.mdx
 ├── configuration/            # Script attributes, display modes, styling
-├── features/                 # Chat, file uploads, voice
+├── features/                 # Chat, file uploads
 ├── guides/                   # Custom triggers, SPA integration, troubleshooting
 └── api/                      # JavaScript API reference
 ```
