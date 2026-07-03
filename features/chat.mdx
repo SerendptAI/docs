@@ -1,0 +1,79 @@
+---
+title: "Chat Experience"
+description: "Streaming answers, guided navigation, tickets, and human handoff."
+---
+
+The chat panel is the heart of the widget. Everything below works out of the box,
+with no configuration required beyond your Company ID.
+
+## Streaming responses
+
+Answers stream token-by-token from the SwiftAgent backend and are rendered as
+formatted **Markdown** (bold, lists, links, and inline code). While the agent
+works, the widget shows live status:
+
+- A **typing indicator** warms up before text begins.
+- Transient **thinking/tool stages** (e.g. "searching knowledge base") appear as a
+  single status line that updates in place, then drop away once the real answer
+  arrives.
+- Each completed reply is stamped with the **time taken** to respond.
+
+## Guided navigation
+
+When a question is best answered by showing rather than telling, the agent returns
+a **navigation guide**: an ordered set of steps, each with:
+
+- A page title and instruction
+- An annotated **screenshot** with a spotlight and arrow highlighting exactly
+  where to click
+- A click-to-zoom lightbox for a closer look
+
+This turns "how do I change my billing address?" into a visual walkthrough.
+
+## Support tickets
+
+If the agent creates a support ticket, the reply shows a dedicated **Ticket ID
+badge** with a one-click **Copy** button, so the visitor can reference it later.
+The ticket lifecycle ("Creating ticket…" → "Ticket created") animates in place.
+
+## Human handoff
+
+Escalated conversations connect to a **realtime socket**. When a human teammate
+replies, their message streams into the same thread and the header/avatar switch
+to that agent's name and photo; the visitor never leaves the chat.
+
+<Info>
+  The socket connects only **after** the visitor has sent at least one message
+  (when a server-side session exists), and only while the panel is open. This
+  avoids unnecessary connections and reconnect storms.
+</Info>
+
+## Conversation persistence
+
+The full conversation (and its server session) is saved to `localStorage` per
+company. A page reload keeps the thread intact, and reopening the widget restores
+messages fully rendered instead of replaying the typing animation.
+
+## Suggested prompts
+
+In widget mode, rotating **prompt bubbles** appear above the launcher to invite
+visitors in (for example, "What's the pricing like?"). These are configured in
+your dashboard and can be turned off entirely. Clicking a bubble opens the chat and
+sends that question immediately.
+
+## First-open loading
+
+On the very first open, a **skeleton loader** fills the message area while your
+company profile loads, so the panel never flashes blank. It appears once per
+session; subsequent opens are instant thanks to caching.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="File uploads" icon="paperclip" href="/features/file-uploads">
+    Let visitors attach images and PDFs.
+  </Card>
+  <Card title="Voice input" icon="microphone" href="/features/voice">
+    Speak instead of type.
+  </Card>
+</CardGroup>

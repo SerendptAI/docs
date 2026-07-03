@@ -1,0 +1,80 @@
+---
+title: "open() / close() / toggle()"
+description: "Open and close the chat panel from your own UI."
+---
+
+These methods drive the visibility of the chat panel. They act on the currently
+mounted instance and are safe no-ops if nothing is mounted yet.
+
+## `open()`
+
+Opens the chat panel.
+
+```js
+window.SwiftAgentWidget.open();
+```
+
+Common uses:
+
+<CodeGroup>
+```html Inline handler
+<a onclick="SwiftAgentWidget.open(); return false;">Ask our AI →</a>
+```
+
+```js Event listener
+document.querySelector("#help").addEventListener("click", () => {
+  window.SwiftAgentWidget.open();
+});
+```
+
+```jsx React
+<button onClick={() => window.SwiftAgentWidget.open()}>Chat with us</button>
+```
+</CodeGroup>
+
+## `close()`
+
+Closes the chat panel.
+
+```js
+window.SwiftAgentWidget.close();
+```
+
+```html
+<button onclick="SwiftAgentWidget.close()">Close chat</button>
+```
+
+## `toggle()`
+
+Opens the panel if closed, closes it if open.
+
+```js
+window.SwiftAgentWidget.toggle();
+```
+
+```html
+<div class="help-box" onclick="SwiftAgentWidget.toggle()">
+  <span class="icon">?</span>
+  <span>Chat with us</span>
+</div>
+```
+
+## Keyboard & backdrop
+
+The panel also responds to built-in interactions with no extra code:
+
+- **Escape** closes the panel.
+- Clicking the **backdrop** (outside the panel) closes it.
+
+## Guarding early calls
+
+If your code may run before `widget-ui.js` loads, guard the call:
+
+```js
+window.SwiftAgentWidget?.open();
+```
+
+<Note>
+  Inline `onclick` handlers and `data-trigger` bindings are always safe; they only
+  fire on user interaction, by which point the script has loaded.
+</Note>

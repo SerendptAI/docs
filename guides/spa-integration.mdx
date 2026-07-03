@@ -1,0 +1,134 @@
+---
+title: "SPA & Framework Integration"
+description: "Use the widget with React, Vue, Next.js, and other single-page apps."
+---
+
+The widget works in single-page applications, but SPAs manage the DOM and script
+lifecycle differently from static pages. This guide covers the patterns that matter.
+
+## Auto-mount vs. manual mount
+
+On a static page, the script **auto-mounts** on `DOMContentLoaded`. In an SPA you
+have two options:
+
+<CardGroup cols={2}>
+  <Card title="Let it auto-mount" icon="wand-magic-sparkles">
+    Add the script tag to your root HTML template (e.g. `index.html`,
+    `app/layout.tsx`). It mounts once and persists across client-side route
+    changes, with no per-page code.
+  </Card>
+  <Card title="Mount manually" icon="gears">
+    Load the bundle, then call `SwiftAgentWidget.mount(companyId, options)` when
+    you're ready. Best when you need to defer loading or set options dynamically.
+  </Card>
+</CardGroup>
+
+## Recommended: mount once in the root
+
+Because the widget lives in its own fixed host element with a persistent
+conversation, you want a **single instance** for the whole app. Put the script in
+your root template so it survives route transitions.
+
+<CodeGroup>
+```tsx Next.js: app/layout.tsx
+import Script from "next/script";
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        {children}
+        <Script
+          src="https://widget.swiftagents.org/dist/widget-ui.js"
+          data-company-id="YOUR_COMPANY_ID"
+          data-api-key="swa_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          strategy="afterInteractive"
+        />
+      </body>
+    </html>
+  );
+}
+```
+
+```html Vite / CRA: index.html
+<body>
+  <div id="root"></div>
+  <script
+    src="https://widget.swiftagents.org/dist/widget-ui.js"
+    data-company-id="YOUR_COMPANY_ID"
+    data-api-key="swa_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    defer
+  ></script>
+</body>
+```
+
+```html Vue / Nuxt: app.html or nuxt.config
+<!-- add to your root HTML template, before </body> -->
+<script
+  src="https://widget.swiftagents.org/dist/widget-ui.js"
+  data-company-id="YOUR_COMPANY_ID"
+  data-api-key="swa_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  defer
+></script>
+```
+</CodeGroup>
+
+## Manual mount from code
+
+If you'd rather control mounting yourself, load the bundle **without** a
+`data-company-id` (so it doesn't auto-mount), then call `mount()`:
+
+```js
+window.SwiftAgentWidget.mount("YOUR_COMPANY_ID", {
+  apiKey: "swa_live_xxx",
+  mode: "button",
+  trigger: ".open-chat",
+});
+```
+
+Clean up when your app tears down (rarely needed for a root-level widget):
+
+```js
+window.SwiftAgentWidget.unmount();
+```
+
+See the [`mount()` reference](/api/mount) for all options.
+
+## Client-side routing
+
+The widget listens for clicks via a **delegated** listener, so
+`data-trigger` buttons rendered on new routes keep working without re-binding. The
+launcher, chat state, and conversation persist across route changes because the
+widget lives outside your framework's DOM tree.
+
+<Warning>
+  Avoid adding the script tag inside a component that re-renders or remounts on
+  navigation. Mounting twice is guarded (the second call is a no-op), but placing
+  it in a stable root template is cleaner and avoids surprises.
+</Warning>
+
+## TypeScript
+
+The global API is available on `window`. If you use TypeScript, declare it:
+
+```ts
+declare global {
+  interface Window {
+    SwiftAgentWidget?: {
+      mount: (companyId: string, options?: {
+        baseUrl?: string;
+        apiKey?: string;
+        mode?: "widget" | "button";
+        trigger?: string;
+      }) => void;
+      unmount: () => void;
+      open: () => void;
+      close: () => void;
+      toggle: () => void;
+      readonly isLoaded: boolean;
+    };
+  }
+}
+
+export {};
+```

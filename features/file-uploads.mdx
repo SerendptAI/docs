@@ -1,0 +1,59 @@
+---
+title: "File Uploads"
+description: "Let visitors attach images and PDFs to their messages."
+---
+
+Visitors can attach files to give the agent visual context, such as a screenshot of an
+error, a photo of a product, or a PDF document. Uploads are handled entirely by the
+widget; no host-page code is required.
+
+## Supported files
+
+| Type | Formats | Notes |
+| --- | --- | --- |
+| Images | JPEG, PNG, GIF, WebP | Enforced by magic-byte inspection on the backend |
+| Documents | PDF | Shown as a labeled file chip |
+
+<Note>
+  The file picker is restricted to these formats to match the backend's allowlist,
+  which avoids rejections for unsupported types such as SVG, BMP, or HEIC.
+</Note>
+
+## Limits
+
+<CardGroup cols={2}>
+  <Card title="Up to 5 files" icon="layer-group">
+    Per message. The picker stops accepting once the limit is reached.
+  </Card>
+  <Card title="10 MB per file" icon="weight-hanging">
+    Larger files are flagged with an inline error and not uploaded.
+  </Card>
+</CardGroup>
+
+## How it works
+
+<Steps>
+  <Step title="Attach">
+    The visitor selects files. Each thumbnail appears immediately with its own
+    upload status.
+  </Step>
+  <Step title="Upload">
+    Files upload independently to a temporary store. A spinner shows progress; a
+    failed or oversized file shows an error without blocking the others.
+  </Step>
+  <Step title="Send">
+    Only files that finished uploading are attached to the outgoing message. The
+    agent receives them alongside the text.
+  </Step>
+</Steps>
+
+<Tip>
+  A message can be **attachment-only**: if the visitor sends files with no text,
+  the widget synthesizes a short caption (e.g. "Uploaded 2 files.") so the message
+  reads cleanly in the thread.
+</Tip>
+
+## Viewing attachments
+
+Image attachments render as thumbnails in the conversation and open in a
+full-screen lightbox on click. PDF attachments appear as a labeled file chip.

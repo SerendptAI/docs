@@ -1,0 +1,77 @@
+---
+title: "Styling & Placement"
+description: "How the widget isolates its styles, positions itself, and adapts to devices."
+---
+
+## Shadow DOM isolation
+
+The widget renders inside a **Shadow DOM**. All of its markup and CSS live in an
+isolated tree attached to a single host element on your page. This means:
+
+- The host page's CSS **cannot** affect the widget's appearance.
+- The widget's CSS **cannot** leak onto your page.
+- Global resets, utility frameworks, and `!important` rules on your site are
+  irrelevant to the widget.
+
+<Note>
+  Because styles are fully encapsulated, there are no class names to override from
+  the host page. Branding (logo, name, colors, suggested prompts) is configured in
+  your [SwiftAgent dashboard](https://swiftagents.org) and delivered with your
+  company profile, not via CSS.
+</Note>
+
+## Branding from your company profile
+
+When the chat opens for the first time, the widget loads your **company profile**
+and applies it automatically:
+
+- **Logo & name** in the chat header and next to agent replies
+- **Suggested prompts** shown as rotating bubbles above the launcher
+- **Agent identity**: human replies show the responding teammate's name and
+  avatar
+
+While the profile loads, a **skeleton loader** is shown so the panel never flashes
+empty. This appears only on the first open; the profile is cached for the rest of
+the session.
+
+## Placement
+
+<CardGroup cols={2}>
+  <Card title="Draggable launcher" icon="arrows-up-down-left-right">
+    In widget mode the launcher can be dragged and snaps to the nearest edge. The
+    resting position persists across reloads.
+  </Card>
+  <Card title="Responsive panel" icon="mobile">
+    The chat is a floating card on desktop and expands to fullscreen on mobile.
+  </Card>
+</CardGroup>
+
+## Mobile & iOS behavior
+
+The widget is tuned for mobile browsers, including quirks specific to iOS Safari:
+
+- **Body scroll lock**: the host page is frozen while the chat is open, so
+  background content doesn't scroll behind the panel.
+- **Visual viewport tracking**: the panel resizes with the on-screen keyboard and
+  browser chrome so the input field is never hidden below the fold.
+- **Smooth-scroll opt-out**: the widget marks itself with `data-lenis-prevent`,
+  so host-page smooth-scroll libraries (e.g. Lenis) don't hijack the chat's own
+  scrolling.
+
+## Stacking (z-index)
+
+The widget mounts in a fixed host element at a very high `z-index` so it renders
+above typical page content. If a host-page element still overlaps the widget,
+lower that element's `z-index` rather than raising the widget; the widget already
+sits near the top of the stacking order.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Chat features" icon="comments" href="/features/chat">
+    What the conversation experience includes out of the box.
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/guides/troubleshooting">
+    Fixes for placement and rendering issues.
+  </Card>
+</CardGroup>

@@ -1,0 +1,132 @@
+---
+title: "Installation"
+description: "Every way to load the SwiftAgent widget: hosted CDN, self-hosted, or your own build."
+---
+
+The widget ships as a single self-contained file, `widget-ui.js`. It bundles
+React, styles, and assets, and isolates itself inside a Shadow DOM, so there are
+no peer dependencies and nothing to configure in your build pipeline.
+
+## Option 1: Hosted script (recommended)
+
+Load the script directly from the SwiftAgent CDN. You always get the latest stable
+build with no hosting to maintain.
+
+```html
+<script
+  src="https://widget.swiftagents.org/dist/widget-ui.js"
+  data-company-id="YOUR_COMPANY_ID"
+  data-api-key="swa_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  defer
+></script>
+```
+
+<Tip>
+  Keep the `defer` attribute so the script executes after the HTML is parsed. The
+  widget also guards against this itself, but `defer` avoids blocking your page's
+  first render.
+</Tip>
+
+## Option 2: Self-host the bundle
+
+Download `widget-ui.js` and serve it from your own domain or asset host. Point the
+`src` at your copy and set `data-base-url` to your SwiftAgent API origin so the
+widget knows where to send requests.
+
+```html
+<script
+  src="/assets/widget-ui.js"
+  data-company-id="YOUR_COMPANY_ID"
+  data-api-key="swa_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  data-base-url="https://api.swiftagents.org"
+  defer
+></script>
+```
+
+<Note>
+  When the script and your API share an origin, `data-base-url` is optional; the
+  widget derives the API origin from the script's `src`. Set it explicitly when
+  self-hosting the file on a different domain than the API.
+</Note>
+
+## Option 3: Build from source
+
+If you maintain the widget repository, build the bundle yourself:
+
+```bash
+npm install
+npm run build
+```
+
+The build emits `dist/widget-ui.js`: a fully self-contained IIFE bundle with
+Shadow DOM style encapsulation. Deploy that file to any static host.
+
+<Info>
+**Tech stack**: React 19, Vite (IIFE build target), Tailwind CSS v4, and Shadow
+DOM for style isolation. No framework is required on the host page.
+</Info>
+
+## Framework snippets
+
+The widget is framework-agnostic. Add the tag wherever your framework renders raw
+markup.
+
+<CodeGroup>
+```html HTML
+<!-- before </body> -->
+<script
+  src="https://widget.swiftagents.org/dist/widget-ui.js"
+  data-company-id="YOUR_COMPANY_ID"
+  data-api-key="swa_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  defer
+></script>
+```
+
+```tsx Next.js (app/layout.tsx)
+import Script from "next/script";
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        {children}
+        <Script
+          src="https://widget.swiftagents.org/dist/widget-ui.js"
+          data-company-id="YOUR_COMPANY_ID"
+          data-api-key="swa_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          strategy="afterInteractive"
+        />
+      </body>
+    </html>
+  );
+}
+```
+
+```html WordPress
+<!-- Appearance → Theme File Editor → footer.php, before </body> -->
+<script
+  src="https://widget.swiftagents.org/dist/widget-ui.js"
+  data-company-id="YOUR_COMPANY_ID"
+  data-api-key="swa_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  defer
+></script>
+```
+</CodeGroup>
+
+<Warning>
+  The widget only auto-mounts in the **top-level window**. It intentionally skips
+  execution inside iframes to avoid duplicate launchers on embedded pages. To run
+  it inside a framed context, mount it manually with the
+  [JavaScript API](/api/mount).
+</Warning>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="sliders" href="/configuration/attributes">
+    Tune behavior with `data-*` attributes.
+  </Card>
+  <Card title="JavaScript API" icon="code" href="/api/overview">
+    Mount and control the widget from code.
+  </Card>
+</CardGroup>

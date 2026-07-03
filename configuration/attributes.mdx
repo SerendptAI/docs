@@ -1,0 +1,82 @@
+---
+title: "Script Attributes"
+description: "Configure the widget with data-* attributes on the script tag."
+---
+
+Every setting is a `data-*` attribute on the `<script>` tag. The widget reads them
+once at auto-mount, so changing an attribute means reloading the page.
+
+## Reference
+
+<ParamField path="data-company-id" type="string" required>
+  Your SwiftAgent **Company ID** (a UUID). Identifies which agent and knowledge
+  base the widget talks to. Without it, the widget does not mount.
+</ParamField>
+
+<ParamField path="data-api-key" type="string" required>
+  Your SwiftAgent **API key**, prefixed `swa_live_…`. Sent as the `X-API-Key`
+  header on every chat and upload request. Without it those requests are rejected
+  and the chat cannot respond.
+</ParamField>
+
+<ParamField path="data-base-url" type="string" default="origin of the script src">
+  The SwiftAgent API origin, e.g. `https://api.swiftagents.org`. When omitted, the
+  widget derives it from the script's `src` URL. Set this explicitly when you
+  self-host `widget-ui.js` on a different domain than the API.
+</ParamField>
+
+<ParamField path="data-mode" type="'widget' | 'button'" default="widget">
+  Controls how the chat is opened. `widget` shows the floating launcher;
+  `button` hides it and waits for a host-page trigger. See
+  [Display modes](/configuration/display-modes).
+</ParamField>
+
+<ParamField path="data-trigger" type="string (CSS selector)">
+  A CSS selector for host-page elements that open the chat when clicked. Uses a
+  delegated listener, so elements added later (e.g. SPA-rendered buttons) still
+  work. Typically paired with `data-mode="button"`.
+</ParamField>
+
+## Full example
+
+```html
+<script
+  src="https://widget.swiftagents.org/dist/widget-ui.js"
+  data-company-id="2883e40b-4ad9-4352-b78e-8b2053e847e3"
+  data-api-key="swa_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  data-base-url="https://api.swiftagents.org"
+  data-mode="button"
+  data-trigger=".open-chat"
+  defer
+></script>
+```
+
+## Notes
+
+<AccordionGroup>
+  <Accordion title="Attributes are read only once, at mount">
+    The widget parses `data-*` attributes when it auto-mounts. Editing them via
+    JavaScript after load has no effect; reload the page, or use the
+    [`mount()` API](/api/mount) to remount with new options.
+  </Accordion>
+  <Accordion title="The API key is public">
+    Because the widget runs in the browser, `data-api-key` is visible to anyone
+    who views source. Only use keys scoped to the public chat endpoints, never a
+    server-side secret.
+  </Accordion>
+  <Accordion title="One widget per page">
+    The widget mounts a single instance keyed by a fixed host element ID. A second
+    script tag is a no-op while one is already mounted.
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Display modes" icon="hand-pointer" href="/configuration/display-modes">
+    Floating launcher vs. your own trigger button.
+  </Card>
+  <Card title="Styling & placement" icon="palette" href="/configuration/styling">
+    How isolation, positioning, and theming work.
+  </Card>
+</CardGroup>

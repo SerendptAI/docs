@@ -1,0 +1,94 @@
+---
+title: "Display Modes"
+description: "Choose between the floating launcher and your own trigger button."
+---
+
+The widget opens in one of two modes, set with `data-mode`.
+
+## Widget mode (default)
+
+A draggable floating launcher sits in the bottom corner of the page. Visitors
+click it to open the chat. Rotating suggested prompts periodically surface above
+the launcher to invite engagement.
+
+```html
+<script
+  src="https://widget.swiftagents.org/dist/widget-ui.js"
+  data-company-id="YOUR_COMPANY_ID"
+  data-api-key="swa_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  data-mode="widget"
+  defer
+></script>
+```
+
+<Note>
+  The launcher is **draggable**. Visitors can reposition it to the left or right
+  edge, and the widget remembers the position across reloads via
+  `localStorage`.
+</Note>
+
+## Button mode
+
+The floating launcher is hidden entirely. The chat opens only when a host-page
+element is triggered, ideal when you already have a "Help" or "Support" button in
+your own UI.
+
+```html
+<script
+  src="https://widget.swiftagents.org/dist/widget-ui.js"
+  data-company-id="YOUR_COMPANY_ID"
+  data-api-key="swa_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  data-mode="button"
+  data-trigger=".open-chat"
+  defer
+></script>
+```
+
+Any element matching the `data-trigger` selector opens the chat when clicked:
+
+```html
+<button class="open-chat">Talk to support</button>
+```
+
+The trigger uses a **delegated click listener**, so buttons rendered later by your
+framework still work without re-binding.
+
+### Other ways to open in button mode
+
+Because the widget also exposes a global API, you can open it from any element:
+
+<CodeGroup>
+```html Inline handler
+<a onclick="SwiftAgentWidget.open(); return false;">Need help? Ask our AI →</a>
+```
+
+```html Custom element
+<div class="help-box" onclick="SwiftAgentWidget.toggle()">
+  <span class="icon">?</span>
+  <span>Chat with us</span>
+</div>
+```
+
+```js From your code
+document.querySelector("#support").addEventListener("click", () => {
+  window.SwiftAgentWidget.open();
+});
+```
+</CodeGroup>
+
+See the [JavaScript API](/api/open-close-toggle) for the full method list.
+
+## Choosing a mode
+
+| | Widget mode | Button mode |
+| --- | --- | --- |
+| Floating launcher | Shown | Hidden |
+| Suggested prompt bubbles | Shown | Hidden |
+| Opens from | The launcher | Your own trigger / API |
+| Best for | Adding chat to a site with no existing entry point | Sites that already have a support/help button |
+
+## Next steps
+
+<Card title="Custom triggers guide" icon="hand-pointer" href="/guides/custom-triggers">
+  Patterns for wiring the chat to your own buttons and menus.
+</Card>

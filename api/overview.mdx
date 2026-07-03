@@ -1,0 +1,74 @@
+---
+title: "API Overview"
+description: "Control the widget from JavaScript with the global SwiftAgentWidget object."
+---
+
+Once the script has loaded, the widget exposes a global object on `window`:
+
+```js
+window.SwiftAgentWidget
+```
+
+Use it to open, close, mount, and unmount the widget programmatically, from inline
+handlers, event listeners, or your framework code.
+
+## Methods at a glance
+
+| Member | Signature | Description |
+| --- | --- | --- |
+| `mount` | `mount(companyId, options?)` | Create and render a widget instance |
+| `unmount` | `unmount()` | Remove the widget and clean up |
+| `open` | `open()` | Open the chat panel |
+| `close` | `close()` | Close the chat panel |
+| `toggle` | `toggle()` | Toggle the chat panel |
+| `isLoaded` | `boolean` (getter) | Whether an instance is currently mounted |
+
+<CardGroup cols={2}>
+  <Card title="mount() & unmount()" icon="power-off" href="/api/mount">
+    Programmatic lifecycle control and all mount options.
+  </Card>
+  <Card title="open / close / toggle" icon="hand-pointer" href="/api/open-close-toggle">
+    Drive the chat panel from your own UI.
+  </Card>
+</CardGroup>
+
+## Availability
+
+The API exists as soon as `widget-ui.js` executes; you do **not** need to wait for
+the widget to visually mount to call `open()`. If you call the API from code that
+might run before the script loads, guard it:
+
+```js
+if (window.SwiftAgentWidget?.isLoaded) {
+  window.SwiftAgentWidget.open();
+}
+```
+
+<Note>
+  `open`, `close`, and `toggle` operate on the mounted instance. If no instance is
+  mounted yet, they are safe no-ops.
+</Note>
+
+## TypeScript declaration
+
+```ts
+declare global {
+  interface Window {
+    SwiftAgentWidget?: {
+      mount: (companyId: string, options?: {
+        baseUrl?: string;
+        apiKey?: string;
+        mode?: "widget" | "button";
+        trigger?: string;
+      }) => void;
+      unmount: () => void;
+      open: () => void;
+      close: () => void;
+      toggle: () => void;
+      readonly isLoaded: boolean;
+    };
+  }
+}
+
+export {};
+```

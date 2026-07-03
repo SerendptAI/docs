@@ -1,0 +1,75 @@
+---
+title: "Introduction"
+description: "Add an AI chat agent to any website with a single script tag."
+---
+
+The **SwiftAgent Widget** is a self-contained, embeddable AI chat agent that drops
+into any website with one `<script>` tag. It answers visitor questions, guides
+users through your product with annotated screenshots, creates support tickets,
+and hands off to a human agent when needed, all without touching your existing
+front-end code.
+
+The widget is built as a standalone IIFE bundle with **Shadow DOM style isolation**,
+so it never inherits or leaks CSS from the host page. It works on plain HTML sites,
+server-rendered apps, and single-page applications alike.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Embed the widget on your site in under two minutes.
+  </Card>
+  <Card title="Installation" icon="download" href="/installation">
+    Every way to load the script: CDN, self-hosted, or npm-built.
+  </Card>
+  <Card title="Configuration" icon="sliders" href="/configuration/attributes">
+    Reference for every `data-*` attribute you can set.
+  </Card>
+  <Card title="JavaScript API" icon="code" href="/api/overview">
+    Control the widget programmatically with `SwiftAgentWidget`.
+  </Card>
+</CardGroup>
+
+## What you get
+
+<CardGroup cols={2}>
+  <Card title="Streaming AI chat" icon="comments">
+    Real-time, markdown-formatted responses with a live typing indicator.
+  </Card>
+  <Card title="Guided navigation" icon="map">
+    Step-by-step walkthroughs with annotated product screenshots.
+  </Card>
+  <Card title="Support tickets" icon="ticket">
+    Automatically raises a ticket and shows a copyable Ticket ID.
+  </Card>
+  <Card title="Human handoff" icon="headset">
+    Escalated conversations stream in live replies from your team.
+  </Card>
+  <Card title="File uploads" icon="paperclip">
+    Visitors can attach images and PDFs to describe their issue.
+  </Card>
+  <Card title="Voice input" icon="microphone">
+    Speak instead of type; speech is transcribed into the chat.
+  </Card>
+</CardGroup>
+
+## How it works
+
+<Steps>
+  <Step title="Add the script">
+    Drop the `<script>` tag on your page with your `data-company-id` and
+    `data-api-key`. The widget auto-mounts once the DOM is ready.
+  </Step>
+  <Step title="Visitor opens the chat">
+    A floating launcher appears in the corner (or you bind your own button in
+    [button mode](/configuration/display-modes)).
+  </Step>
+  <Step title="The agent responds">
+    Messages stream to the SwiftAgent backend, which replies with AI-generated
+    answers, navigation guides, or a ticket, reconnecting over a realtime
+    socket for any human follow-up.
+  </Step>
+</Steps>
+
+<Note>
+  You need both a **Company ID** and an **API key** from your
+  [SwiftAgent dashboard](https://swiftagents.org) before you can embed the widget.
+</Note>

@@ -1,0 +1,88 @@
+---
+title: "Custom Triggers"
+description: "Open the chat from your own buttons, links, and menu items."
+---
+
+Instead of the floating launcher, you can open the chat from any element on your
+page. This is the norm when running in [button mode](/configuration/display-modes),
+but the API works in either mode.
+
+## Declarative: `data-trigger`
+
+The simplest approach: give the script a CSS selector, and every matching element
+opens the chat when clicked. No JavaScript required.
+
+```html
+<script
+  src="https://widget.swiftagents.org/dist/widget-ui.js"
+  data-company-id="YOUR_COMPANY_ID"
+  data-api-key="swa_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  data-mode="button"
+  data-trigger=".open-chat"
+  defer
+></script>
+
+<button class="open-chat">Talk to support</button>
+<a href="#" class="open-chat">Ask a question</a>
+```
+
+The listener is **delegated** on `document`, so elements added after load, for
+example buttons rendered by a SPA, trigger the chat too, with no re-binding.
+
+<Tip>
+  Use a dedicated class like `.open-chat` rather than a broad selector, so you
+  don't accidentally bind unrelated elements.
+</Tip>
+
+## Programmatic: the JavaScript API
+
+For finer control, call the global `SwiftAgentWidget` API directly.
+
+<CodeGroup>
+```html Inline onclick
+<a onclick="SwiftAgentWidget.open(); return false;">Need help? →</a>
+```
+
+```html Toggle from a custom element
+<div class="help-box" onclick="SwiftAgentWidget.toggle()">Chat with us</div>
+```
+
+```js Event listener
+document.querySelector("#support-btn").addEventListener("click", () => {
+  window.SwiftAgentWidget.open();
+});
+```
+
+```jsx React
+<button onClick={() => window.SwiftAgentWidget.open()}>
+  Chat with support
+</button>
+```
+</CodeGroup>
+
+## Available methods
+
+| Method | Effect |
+| --- | --- |
+| `SwiftAgentWidget.open()` | Open the chat panel |
+| `SwiftAgentWidget.close()` | Close the chat panel |
+| `SwiftAgentWidget.toggle()` | Toggle open/closed |
+
+See the [JavaScript API reference](/api/open-close-toggle) for full details,
+including `mount`, `unmount`, and `isLoaded`.
+
+## Guarding against early calls
+
+The API becomes available once the script has executed. If you call it from code
+that may run before the script loads, guard the call:
+
+```js
+if (window.SwiftAgentWidget?.isLoaded) {
+  window.SwiftAgentWidget.open();
+}
+```
+
+<Note>
+  Inline `onclick` handlers and `data-trigger` are always safe; they only fire on
+  user interaction, by which point the script has loaded.
+</Note>

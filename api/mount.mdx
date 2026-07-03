@@ -1,0 +1,95 @@
+---
+title: "mount() & unmount()"
+description: "Create and tear down a widget instance from code."
+---
+
+Use these when you want to control the widget's lifecycle yourself instead of
+relying on auto-mount, for example to defer loading, set options dynamically, or
+run inside an iframe.
+
+## `mount(companyId, options?)`
+
+Creates the widget host element, initializes the API clients, and renders the
+widget. If an instance is already mounted, the call is a **no-op**.
+
+```js
+window.SwiftAgentWidget.mount("YOUR_COMPANY_ID", {
+  baseUrl: "https://api.swiftagents.org",
+  apiKey: "swa_live_xxx",
+  mode: "button",
+  trigger: ".open-chat",
+});
+```
+
+### Parameters
+
+<ParamField path="companyId" type="string" required>
+  Your SwiftAgent Company ID. Equivalent to the `data-company-id` attribute.
+</ParamField>
+
+<ParamField path="options.baseUrl" type="string" default="origin of the script src">
+  The SwiftAgent API origin. When omitted, it's derived from the loaded script's
+  URL. Equivalent to `data-base-url`.
+</ParamField>
+
+<ParamField path="options.apiKey" type="string" required>
+  Your SwiftAgent API key (`swa_live_…`), sent as the `X-API-Key` header on chat
+  and upload requests. Equivalent to `data-api-key`.
+</ParamField>
+
+<ParamField path="options.mode" type="'widget' | 'button'" default="widget">
+  Display mode. `widget` shows the floating launcher; `button` hides it. Equivalent
+  to `data-mode`.
+</ParamField>
+
+<ParamField path="options.trigger" type="string (CSS selector)">
+  Selector for host-page elements that open the chat on click. Equivalent to
+  `data-trigger`.
+</ParamField>
+
+<Note>
+  `mount()` options map one-to-one to the `data-*` attributes. Use the attributes
+  for auto-mount, or `mount()` when you need to mount from code.
+</Note>
+
+## Prevent auto-mount, then mount manually
+
+To take full control, load the bundle **without** `data-company-id` so it doesn't
+auto-mount, then call `mount()` when ready:
+
+```html
+<!-- No data-company-id → no auto-mount -->
+<script src="https://widget.swiftagents.org/dist/widget-ui.js" defer></script>
+
+<script>
+  window.addEventListener("load", () => {
+    window.SwiftAgentWidget.mount("YOUR_COMPANY_ID", {
+      apiKey: "swa_live_xxx",
+      mode: "widget",
+    });
+  });
+</script>
+```
+
+## `unmount()`
+
+Removes the widget from the page: unmounts the React tree, deletes the host
+element, removes injected font styles, and detaches any `trigger` listener.
+
+```js
+window.SwiftAgentWidget.unmount();
+```
+
+<Info>
+  A root-level widget rarely needs unmounting. Use it if you conditionally show the
+  widget for only part of a session, or when tearing down a manually-mounted
+  instance in an SPA.
+</Info>
+
+## Check mount state
+
+```js
+if (window.SwiftAgentWidget.isLoaded) {
+  // an instance is currently mounted
+}
+```

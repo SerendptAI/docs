@@ -1,0 +1,80 @@
+---
+title: "Troubleshooting"
+description: "Fixes for the most common embedding issues."
+---
+
+<AccordionGroup>
+  <Accordion title="The widget doesn't appear at all" icon="ghost">
+    - Confirm the script tag has a valid **`data-company-id`**. Without it, the
+      widget deliberately does not mount.
+    - The widget only auto-mounts in the **top-level window**, not inside iframes.
+      If your page is framed, [mount manually](/api/mount).
+    - Open the browser console and check the **Network** tab, verify
+      `widget-ui.js` loads (HTTP 200) and isn't blocked by a Content Security
+      Policy.
+  </Accordion>
+
+  <Accordion title="The launcher shows but the chat won't open or send" icon="plug-circle-exclamation">
+    - Check that `data-base-url` points at your SwiftAgent API origin. When you
+      self-host `widget-ui.js` on a different domain than the API, this is
+      required.
+    - Confirm `data-api-key` is present and valid. Chat and upload requests send
+      it as the `X-API-Key` header, and are rejected without it.
+    - Look for failed requests to `/api/v1/chat/...` in the Network tab.
+  </Accordion>
+
+  <Accordion title="Content Security Policy blocks the widget" icon="shield-halved">
+    Allow the script and the API origin in your CSP. At minimum you'll need:
+
+    ```
+    script-src  https://widget.swiftagents.org;
+    connect-src https://api.swiftagents.org wss://api.swiftagents.org;
+    img-src     https://res.cloudinary.com data:;
+    ```
+
+    Adjust the hosts to match your own script URL and API origin. The
+    `connect-src` entry must also permit the **WebSocket** origin used for human
+    handoff.
+  </Accordion>
+
+  <Accordion title="Voice input isn't available" icon="microphone-slash">
+    - Browsers only expose the microphone in a **secure context**: the page must
+      be served over **HTTPS** (or `localhost`).
+    - The visitor must **grant microphone permission**. If they previously denied
+      it, they'll need to re-enable it in site settings.
+  </Accordion>
+
+  <Accordion title="File uploads are rejected" icon="file-circle-xmark">
+    - Only **JPEG, PNG, GIF, WebP,** and **PDF** are accepted; the backend verifies
+      image types by magic bytes, so renamed files still fail.
+    - Each file must be **10 MB or smaller**, and a message can carry at most
+      **5 files**.
+  </Accordion>
+
+  <Accordion title="Host-page styles look broken near the widget" icon="palette">
+    The widget renders in an isolated **Shadow DOM**, so it can't be the source of
+    leaked styles. If layout shifts when the chat opens, that's the intentional
+    **body scroll lock**: the host page is frozen while the panel is open and
+    restored on close.
+  </Accordion>
+
+  <Accordion title="The chat panel scrolls the page instead of itself" icon="arrows-up-down">
+    This usually means a host-page smooth-scroll library (e.g. Lenis) is capturing
+    wheel events. The widget sets `data-lenis-prevent` on its host to opt out; if
+    you use a different library, exclude the `#swift-agent-widget-root` element
+    from its scroll hijacking.
+  </Accordion>
+
+  <Accordion title="Two launchers appear" icon="clone">
+    You have the script tag on the page **and** a manual `mount()` call, or the tag
+    is inside a component that remounts. The widget guards against duplicates by a
+    fixed host ID, but the cleanest fix is a single script tag in a stable root
+    template. See [SPA integration](/guides/spa-integration).
+  </Accordion>
+</AccordionGroup>
+
+## Still stuck?
+
+Reach out through your [SwiftAgent dashboard](https://swiftagents.org) with your
+Company ID and a description of what you're seeing, including any console or
+network errors, and the team can help.
