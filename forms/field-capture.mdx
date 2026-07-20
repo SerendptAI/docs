@@ -1,0 +1,200 @@
+---
+title: "Field Capture"
+description: "How SwiftForms reads your form, names it, and decides what to send."
+---
+
+SwiftForms has no field builder and no schema. It reads whatever your form
+already contains at the moment it is submitted, which is why it works on forms
+you did not write. This page explains precisely what it collects.
+
+## When forms are bound
+
+The script attaches a `submit` listener to each form it finds.
+
+<Steps>
+  <Step title="On DOM ready">
+    `SwiftForms.init()` waits for `DOMContentLoaded`, then scans the document for
+    every `<form>` element. If the DOM is already interactive when `init()` runs,
+    it scans immediately.
+  </Step>
+  <Step title="On DOM changes">
+    A `MutationObserver` watches `document.body` for added nodes and binds any
+    new forms, including forms nested inside an added subtree. This is what makes
+    the script work in React, Vue, and other single-page apps where forms mount
+    after the initial load.
+  </Step>
+</Steps>
+
+Each form is tracked in a `WeakSet`, so a form is never bound twice and no
+duplicate submissions are sent.
+
+## How field values are read
+
+Every submittable element in `form.elements` is visited in document order. The
+key for each value is the element's `name`, falling back to its `id`. An element
+with neither is skipped, because there would be no way to label it in the inbox.
+
+| Input | Stored as | Example |
+| --- | --- | --- |
+| `text`, `email`, `tel`, `url`, `number`, `date` | The raw string value | `"jane@example.com"` |
+| `<textarea>` | The raw string value | `"Please call me back"` |
+| `<select>` | The selected option's value | `"enterprise"` |
+| `<select multiple>` | Array of selected values | `["email", "sms"]` |
+| Radio group | The selected value, or `null` if none is selected | `"yes"` |
+| Checkbox group | Array of the checked values | `["terms", "newsletter"]` |
+| Single checkbox with no `value` | `true` when checked | `[true]` |
+
+<Note>
+  Checkboxes always produce an array, even when only one checkbox shares that
+  name. A group with nothing checked produces an empty array rather than being
+  omitted, so you can tell "left blank" apart from "field not present".
+</Note>
+
+A checkbox whose `value` is the browser default `"on"` is stored as the boolean
+`true` instead of the string `"on"`, which reads better in the inbox.
+
+## What is never collected
+
+Some fields are excluded by design and cannot be re-enabled.
+
+<CardGroup cols={2}>
+  <Card title="Passwords" icon="lock">
+    Any input with `type="password"` is skipped outright.
+  </Card>
+  <Card title="File inputs" icon="paperclip">
+    `type="file"` is skipped. SwiftForms does not upload attachments.
+  </Card>
+  <Card title="CSRF tokens" icon="shield">
+    Hidden inputs with a recognised CSRF name are skipped.
+  </Card>
+  <Card title="Buttons" icon="hand-pointer">
+    `submit`, `button`, `reset`, and `image` inputs carry no visitor data.
+  </Card>
+</CardGroup>
+
+The hidden fields treated as CSRF tokens are matched case insensitively against
+this list:
+
+```text
+csrfmiddlewaretoken
+_csrf
+_token
+csrf_token
+authenticity_token
+csrftoken
+__requestverificationtoken
+```
+
+Those names cover Django, Rails, Laravel, Express, and ASP.NET defaults. Other
+hidden inputs are collected normally, which is useful for campaign or source
+tracking values.
+
+<Warning>
+  Hidden fields that are not on the CSRF list are captured. If your form carries
+  a session identifier, a signed token, or anything else you would rather not
+  store in SwiftAgent, rename the field to one of the names above or add
+  `data-swift-ignore` to the form.
+</Warning>
+
+## How forms are named
+
+The name shown in your inbox is resolved once, when the form is bound, using the
+first of these that produces a non-empty value:
+
+<Steps>
+  <Step title="data-swift-name">
+    An explicit override you set on the `<form>` element. Always wins.
+  </Step>
+  <Step title="title or aria-label">
+    Standard accessible attributes on the form.
+  </Step>
+  <Step title="Nearest heading">
+    The script walks backwards through previous siblings, then up through
+    parents, looking for the closest `<h1>` to `<h4>` above the form.
+  </Step>
+  <Step title="id or name">
+    The form's own `id` attribute, then its `name` attribute.
+  </Step>
+  <Step title="Form N">
+    A counted fallback such as `Form 1`, used only when nothing else matches.
+  </Step>
+</Steps>
+
+If your inbox is full of entries called `Form 1` and `Form 2`, add
+`data-swift-name` to those forms. You can also rename them later from the
+dashboard, which is covered in [submissions](/forms/submissions#renaming-labels).
+
+## How forms are identified
+
+Separately from its display name, each form gets a stable identifier used to
+group submissions over time. The first match wins:
+
+| Priority | Source | Identifier |
+| --- | --- | --- |
+| 1 | `id` attribute | `id:contact-form` |
+| 2 | `name` attribute | `name:signup` |
+| 3 | `action` attribute | `action:/subscribe` |
+| 4 | Position in the document | `index:2` |
+
+<Tip>
+  Give every captured form a stable `id`. The `index:` fallback shifts whenever
+  you add or remove a form on the page, which splits one form's history into two
+  groups in your inbox.
+</Tip>
+
+## The submission payload
+
+This is the exact body posted on each submit:
+
+```json
+{
+  "page_url": "https://example.com/contact",
+  "form_identifier": "id:contact-form",
+  "form_name": "Contact us",
+  "data": {
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "plan": "enterprise",
+    "channels": ["email", "sms"],
+    "referral": null,
+    "terms": [true]
+  },
+  "visitor_id": "3f2a91c4-7b8e-4d1a-9c05-2e6f8a4b1d33"
+}
+```
+
+`page_url` is the full `window.location.href` at the time of submission, which
+is how submissions are grouped by page in the inbox.
+
+## Visitor identity
+
+Each browser gets a random UUID stored in `localStorage` under the key
+`swift_visitor_id`. It is generated the first time SwiftForms runs and reused for
+every later submission, which lets you recognise repeat submitters.
+
+If `localStorage` is unavailable, for example in Safari private browsing, the
+script falls back to a fresh ID for that page load rather than failing. Those
+submissions still arrive, but they cannot be linked to earlier ones.
+
+<Note>
+  The visitor ID is a random value with no personal information in it, and it is
+  not shared with the chat widget, which keeps its own session storage.
+</Note>
+
+## How the request is sent
+
+The submission is posted to
+`/api/v1/public/forms/widget/submit?public_key=…` with two deliberate choices:
+
+- **`keepalive: true`** so the browser completes the request even when the form
+  triggers a full page navigation immediately afterwards.
+- **No custom headers and no explicit content type**, which keeps the request a
+  CORS simple request. There is no preflight `OPTIONS` round trip, so nothing is
+  dropped when a visitor submits and navigates in the same instant. The server
+  parses the JSON body itself.
+
+The public key travels in the query string for the same reason. It is a
+publishable key that is safe to expose in client-side code, unlike your API key.
+
+Errors are caught and discarded. A failed capture never surfaces in the
+visitor's console and never interferes with your own form handling.

@@ -1,0 +1,131 @@
+---
+title: "Submissions Inbox"
+description: "Read, reply to, organise, and clean up what your forms collect."
+---
+
+Every capture lands in **Ticketing → Forms** in the
+[SwiftAgent dashboard](https://swiftagents.org). The inbox is a master and
+detail view: a list of submissions on one side, the full contents of the
+selected one on the other.
+
+## How submissions are organised
+
+Website forms produce a three level tree, built from the data each capture
+carries:
+
+<Steps>
+  <Step title="Website">
+    The site the form belongs to, taken from the website link you registered.
+  </Step>
+  <Step title="Page">
+    The page path the submission came from, derived from `page_url`. A contact
+    form reachable at two URLs shows up under both.
+  </Step>
+  <Step title="Form">
+    The individual form on that page, grouped by its
+    [form identifier](/forms/field-capture#how-forms-are-identified).
+  </Step>
+</Steps>
+
+Each level carries a running count of entries, and each form group shows when it
+last received something. That makes it easy to spot a form that has gone quiet
+after a deploy.
+
+## Reading a submission
+
+The list splits into **Unread** and **Read** tabs. Opening a submission marks it
+as read automatically and moves it across, so the unread tab works as a queue
+you can clear.
+
+The detail view shows:
+
+- **Who sent it**, taken from the submitter name if the backend resolved one,
+  otherwise from a `name`, `full_name`, `firstName`, or `username` field in the
+  data. When none of those exist, the submission is labelled with a shortened
+  visitor ID, or `Anonymous`.
+- **When it arrived**, as a formatted timestamp.
+- **Every field**, rendered as a label and value pair. Snake case keys are
+  turned into readable titles, so `first_name` displays as `First Name`.
+  Arrays and objects are shown as JSON.
+- **Previous replies**, if any have been sent.
+
+A submission whose form was left completely empty shows `No submission data`
+rather than a blank panel.
+
+## Replying to a submitter
+
+<Note>
+  Replies are available on **online forms** only. Website form submissions are
+  read-only in the inbox, because the submission is a copy of something your own
+  backend already received and is presumably already answering.
+</Note>
+
+For an online form, a composer appears below the submission. Write your message
+and send it. SwiftAgent emails the submitter from your company address at
+`swifty.email`, and the reply is stored on the submission so anyone on your team
+can see it was handled and what was said.
+
+## Alert emails
+
+Set an **alert email** on a website form and SwiftAgent emails that address
+whenever a submission arrives. It is a single address per form, so point it at a
+shared inbox or a distribution list if more than one person needs it.
+
+You can change the alert email at any time by editing the form. Leaving it empty
+turns the notifications off without affecting capture.
+
+## Renaming labels
+
+The names in the tree come from your markup, and markup is not always written
+with an inbox in mind. You can rename any level from the dashboard:
+
+| Level | What renaming changes |
+| --- | --- |
+| Website | The label for a whole site in the tree |
+| Page | The label for one page path within a site |
+| Form | The name of a single form group on a page |
+
+Renaming only changes the label you see. It does not move submissions, break the
+link to the form on your site, or affect future captures.
+
+<Tip>
+  Renaming is the fix for a form showing up as `Form 3`. For a permanent fix
+  that survives everywhere, add
+  [`data-swift-name`](/forms/field-capture#how-forms-are-named) to the markup as
+  well.
+</Tip>
+
+## Deleting submissions
+
+Deletion works down the same tree, so you can clear out exactly as much as you
+mean to:
+
+- A single submission
+- A form group, with all of its entries
+- A page, with every form on it
+- A whole website, with everything beneath it
+
+You can also select several submissions and delete them in one action.
+
+<Warning>
+  Deletion is permanent. There is no archive and no undo, and submissions are
+  not exported anywhere first. Retrieve anything you still need before deleting
+  a page or a website, since those remove every entry underneath them.
+</Warning>
+
+## Managing keys
+
+Each form has its own key pair, viewable from the form's settings:
+
+- The **public key** (`SDPK-…`) goes in your snippet and is safe to publish.
+- The **API key** authenticates server-side calls and must stay secret.
+
+After creation the dashboard shows only key prefixes. If a key leaks, regenerate
+the pair. Regeneration returns fresh values and a fresh snippet, and it
+invalidates the old keys immediately.
+
+<Warning>
+  Regenerating breaks any live installation using the old public key. Update
+  every page with the new snippet as part of the same change, or captures stop
+  arriving.
+</Warning>

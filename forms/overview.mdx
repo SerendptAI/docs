@@ -1,0 +1,127 @@
+---
+title: "Forms Overview"
+description: "Capture every form submission on your website and read them in one inbox."
+---
+
+**SwiftForms** collects submissions from the forms you already have on your
+website and delivers them to a shared inbox in your SwiftAgent dashboard. You
+keep your existing markup, your existing styling, and your existing backend. You
+add one script tag, and every `<form>` on the page starts reporting what visitors
+send you.
+
+It is a separate script from the [chat widget](/introduction). The two products
+share a dashboard and a company account, but they load independently, so you can
+run either one on its own or both together.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/forms/quickstart">
+    Create a form and paste the snippet in about five minutes.
+  </Card>
+  <Card title="Field capture" icon="list-check" href="/forms/field-capture">
+    Exactly which fields are collected, and which are deliberately skipped.
+  </Card>
+  <Card title="Submissions inbox" icon="inbox" href="/forms/submissions">
+    Read, reply to, organise, and delete what comes in.
+  </Card>
+  <Card title="API reference" icon="code" href="/forms/api-reference">
+    The `SwiftForms` JavaScript API and the public HTTP endpoints.
+  </Card>
+</CardGroup>
+
+## The two kinds of form
+
+SwiftAgent distinguishes between forms that live on your own site and forms that
+SwiftAgent hosts for you.
+
+<CardGroup cols={2}>
+  <Card title="Website forms" icon="globe">
+    You already have a contact form, a signup form, or a quote request on your
+    site. SwiftForms attaches to it and mirrors each submission into your inbox
+    without changing how the form behaves.
+  </Card>
+  <Card title="Online forms" icon="file-lines">
+    You do not have a form yet, or you want one that lives outside your site.
+    SwiftAgent gives you a hosted form with its own URL that you can link or
+    share directly.
+  </Card>
+</CardGroup>
+
+The difference matters in a few places, so it is worth knowing which one you
+created:
+
+| | Website form | Online form |
+| --- | --- | --- |
+| Where the form lives | Your site | Hosted by SwiftAgent |
+| What you configure | Website link, alert email | Form title, form image |
+| How visitors reach it | Your existing page | A shareable `form_url` |
+| Installation | Paste the snippet on your site | No installation needed |
+| Reply from the inbox | Not available | Available |
+
+## What makes it safe to add
+
+The capture script was written so that adding it to a production site is a low
+risk change.
+
+<CardGroup cols={2}>
+  <Card title="It never blocks a submission" icon="shield-check">
+    The script does not call `preventDefault()`. Your form submits exactly as it
+    did before, whether that is a native POST or a React handler.
+  </Card>
+  <Card title="It fails quietly" icon="volume-off">
+    If SwiftAgent is unreachable, the network error is swallowed. Nothing is
+    logged to the visitor's console and nothing breaks on the page.
+  </Card>
+  <Card title="It skips secrets" icon="key">
+    Passwords, file inputs, and CSRF tokens are never collected. See
+    [field capture](/forms/field-capture) for the full list.
+  </Card>
+  <Card title="It has no dependencies" icon="feather">
+    Roughly 12 KB of plain ES5. No framework, no bundler, no build step.
+  </Card>
+</CardGroup>
+
+## How a submission travels
+
+<Steps>
+  <Step title="A visitor submits your form">
+    The visitor fills in your form and clicks your submit button. Your own
+    handling runs untouched.
+  </Step>
+  <Step title="The script reads the field values">
+    SwiftForms walks the form's elements, collects the submittable values, and
+    skips anything sensitive.
+  </Step>
+  <Step title="A copy is sent to SwiftAgent">
+    A `fetch` with `keepalive: true` posts the values, the page URL, a form name,
+    and a visitor ID. `keepalive` lets the request finish even if the page
+    navigates away immediately after submitting.
+  </Step>
+  <Step title="It lands in your inbox">
+    The submission appears under **Ticketing → Forms**, grouped by website, then
+    page, then form. If you set an alert email, SwiftAgent emails you.
+  </Step>
+</Steps>
+
+## Where forms live in the dashboard
+
+Forms are a tab inside **Ticketing**, alongside tickets and mail. Open
+[swiftagents.org](https://swiftagents.org), go to **Ticketing**, and select the
+**Forms** tab.
+
+<Note>
+  Forms and the chat widget are not connected. The AI agent does not read form
+  submissions and cannot show a form inside a chat conversation. If you want a
+  visitor's message to reach your team through the agent, use
+  [support tickets](/features/chat) instead.
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Set up your first form" icon="rocket" href="/forms/quickstart">
+    Create it in the dashboard, then install the snippet.
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/forms/troubleshooting">
+    Nothing arriving? Start here.
+  </Card>
+</CardGroup>

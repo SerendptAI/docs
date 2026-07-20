@@ -1,0 +1,146 @@
+---
+title: "Forms Quickstart"
+description: "Create a form in the dashboard and start capturing submissions."
+---
+
+This guide takes you from an empty Forms tab to a live submission in your inbox.
+
+## Create a website form
+
+Use this path when you already have a form on your own site.
+
+<Steps>
+  <Step title="Open the Forms tab">
+    Sign in to the [SwiftAgent dashboard](https://swiftagents.org), go to
+    **Ticketing**, and select the **Forms** tab.
+  </Step>
+  <Step title="Add a website form">
+    Choose **Website form**. You are asked for two things:
+
+    - **Website link**: the site you are installing on, such as
+      `https://example.com`. It must be a full `http://` or `https://` URL.
+    - **Alert email**: where SwiftAgent emails you when a submission arrives.
+
+    Click **Continue**.
+  </Step>
+  <Step title="Copy your keys and snippet">
+    The second step shows everything you need to install:
+
+    | Value | Looks like | What it is for |
+    | --- | --- | --- |
+    | Snippet | Two `<script>` tags | Paste this straight into your site |
+    | Public key | `SDPK-272…` | Identifies the form from the browser |
+    | API key | A secret string | Server-side calls only, keep it private |
+    | Form ID | A UUID | Referencing the form in the API |
+
+    Copy the snippet now. Click **Save and Exit** when you are done.
+  </Step>
+</Steps>
+
+<Warning>
+  The full **API key** and **public key** are shown only once, on this screen and
+  when you regenerate them. Store them somewhere safe before you leave the
+  drawer. Afterwards the dashboard shows only the key prefixes.
+</Warning>
+
+## Install the snippet
+
+Paste the snippet before the closing `</body>` tag on every page that has a form
+you want to capture:
+
+```html
+<script src="https://api.swiftagents.org/api/v1/public/forms/widget.js"></script>
+<script>
+  SwiftForms.init({ publicKey: "SDPK-272XXXXXXXXXXXX" });
+</script>
+```
+
+Replace the public key with your own. That is the whole installation. Every
+`<form>` on the page is bound automatically as soon as the DOM is ready.
+
+<Note>
+  Prefer the snippet shown in your dashboard over the one above. The script
+  works out where to send submissions by reading the `src` of the tag that
+  loaded it, so the host in your snippet is the host that receives your data.
+</Note>
+
+## Verify it works
+
+<Steps>
+  <Step title="Submit your own form">
+    Open the page in a browser and send a real submission with recognisable
+    values, such as the name `Test Submission`.
+  </Step>
+  <Step title="Watch the network tab">
+    In your browser devtools, look for a `POST` to
+    `/api/v1/public/forms/widget/submit`. Seeing the request confirms the script
+    is bound to your form.
+  </Step>
+  <Step title="Check the inbox">
+    Back in **Ticketing → Forms**, your submission appears under the website,
+    then the page path, then the form. Unread submissions are listed first.
+  </Step>
+</Steps>
+
+If nothing arrives, work through [troubleshooting](/forms/troubleshooting).
+
+## Create an online form
+
+Use this path when you want a form hosted by SwiftAgent instead of one on your
+own site.
+
+<Steps>
+  <Step title="Add an online form">
+    In the **Forms** tab, choose **Online form**. You are asked for:
+
+    - **Form image**: a URL to the image shown with the form.
+    - **Form title**: the name you will recognise it by, such as
+      `NG Ballerz Form`.
+  </Step>
+  <Step title="Copy the form URL">
+    The second step adds a **form URL** to the usual keys and snippet. That URL
+    is the form itself, ready to share in an email, a post, or a link on your
+    site. No installation is required.
+  </Step>
+</Steps>
+
+<Tip>
+  Online forms are the only kind you can reply to from the inbox. If answering
+  submitters by email matters to you, prefer an online form.
+</Tip>
+
+## Control which forms are captured
+
+By default the script binds to every form on the page. Two attributes let you
+change that per form.
+
+Exclude a form entirely:
+
+```html
+<form data-swift-ignore>
+  <input name="q" />
+</form>
+```
+
+Give a form a readable name in the inbox:
+
+```html
+<form data-swift-name="Enterprise quote request">
+  <input name="company" />
+</form>
+```
+
+Without `data-swift-name`, the script derives a name from the form's `title`,
+`aria-label`, or nearest heading. See
+[field capture](/forms/field-capture#how-forms-are-named) for the full order.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Field capture" icon="list-check" href="/forms/field-capture">
+    What gets collected, and how each input type is stored.
+  </Card>
+  <Card title="Submissions inbox" icon="inbox" href="/forms/submissions">
+    Read, reply, rename, and clean up.
+  </Card>
+</CardGroup>

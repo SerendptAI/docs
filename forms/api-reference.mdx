@@ -1,0 +1,220 @@
+---
+title: "Forms API Reference"
+description: "The SwiftForms JavaScript API and the HTTP endpoints behind it."
+---
+
+Most sites need nothing beyond `SwiftForms.init()`. This page documents the rest
+for when you want to submit from your own code or read submissions
+programmatically.
+
+The API base URL is `https://api.swiftagents.org`.
+
+## JavaScript API
+
+The script defines a single global, `window.SwiftForms`.
+
+### SwiftForms.init(config)
+
+Starts capture. Call it once, after the script tag has loaded.
+
+```html
+<script src="https://api.swiftagents.org/api/v1/public/forms/widget.js"></script>
+<script>
+  SwiftForms.init({ publicKey: "SDPK-272XXXXXXXXXXXX" });
+</script>
+```
+
+<ParamField path="publicKey" type="string" required>
+  Your form's public key, prefixed `SDPK-`. Find it in **Ticketing → Forms** when
+  you create or regenerate the form's keys.
+</ParamField>
+
+`init()` binds every form currently in the document and starts watching for new
+ones. It returns nothing.
+
+Calling it twice logs `[SwiftForms] Already initialised.` and does nothing, so a
+duplicated snippet cannot cause duplicate submissions. Calling it without a
+`publicKey` logs `[SwiftForms] publicKey is required.` and capture never starts.
+
+### API base detection
+
+There is no `apiBase` option. The script finds the server by scanning the page
+for the `<script src>` that ends in `/api/v1/public/forms/widget.js` and
+stripping that path. Submissions go to whatever origin served the script, which
+falls back to `window.location.origin` if the tag cannot be found.
+
+This is why you should load the script from the URL in your dashboard snippet
+rather than copying one from elsewhere.
+
+### HTML attributes
+
+Two attributes on a `<form>` element change how it is treated.
+
+<ParamField path="data-swift-ignore" type="boolean attribute">
+  Excludes the form from capture entirely. No listener is attached and nothing is
+  ever sent for it.
+</ParamField>
+
+<ParamField path="data-swift-name" type="string">
+  Sets the form's display name in your inbox, overriding every other naming
+  source.
+</ParamField>
+
+## Public endpoints
+
+These require no bearer token. They are called from the browser and authenticate
+with your public key.
+
+### Submit from the widget
+
+```http
+POST /api/v1/public/forms/widget/submit?public_key=SDPK-272XXXXXXXXXXXX
+```
+
+This is the endpoint the script itself uses. The public key is accepted either as
+the `public_key` query parameter or as an `X-Public-Key` header. The query
+parameter avoids a CORS preflight, which is why the script prefers it.
+
+```json
+{
+  "page_url": "https://example.com/contact",
+  "form_identifier": "id:contact-form",
+  "form_name": "Contact us",
+  "data": { "name": "Jane Doe", "email": "jane@example.com" },
+  "visitor_id": "3f2a91c4-7b8e-4d1a-9c05-2e6f8a4b1d33"
+}
+```
+
+The body is sent without an explicit content type and parsed as JSON by the
+server. `page_url`, `form_identifier`, and `form_name` are what build the
+website, page, and form grouping in your inbox.
+
+### Fetch an online form
+
+```http
+GET /api/v1/public/forms/online/{form_id}
+```
+
+Returns the published definition of an online form, including its `type`,
+`form_title`, and `form_image`.
+
+### Submit an online form
+
+```http
+POST /api/v1/public/forms/online/{form_id}/submit
+```
+
+```json
+{
+  "data": { "name": "Jane Doe", "email": "jane@example.com" },
+  "visitor_id": "optional-stable-id"
+}
+```
+
+`data` is required and accepts any shape. `visitor_id` is optional. The response
+is the stored submission, including its `id`, `submitted_at`, and `is_read`.
+
+<Note>
+  `GET /api/v1/public/forms/{form_id}` and
+  `POST /api/v1/public/forms/{form_id}/submit` still work but are marked legacy.
+  Use the widget endpoint for website forms and the online endpoints for online
+  forms.
+</Note>
+
+## Authenticated endpoints
+
+These read and manage your forms, and all of them require an
+`Authorization: Bearer <token>` header. They operate on a company, so every path
+starts with your company ID.
+
+### Forms
+
+| Method | Path |
+| --- | --- |
+| `POST` | `/api/v1/forms/{company_id}/website-forms` |
+| `POST` | `/api/v1/forms/{company_id}/online-forms` |
+| `GET` | `/api/v1/forms/{company_id}` |
+| `GET` | `/api/v1/forms/{company_id}/{form_id}` |
+| `PUT` | `/api/v1/forms/{company_id}/{form_id}` |
+| `DELETE` | `/api/v1/forms/{company_id}/{form_id}` |
+| `GET` | `/api/v1/forms/{company_id}/{form_id}/overview` |
+
+Creating a website form takes `website_link` and `alert_email`. Creating an
+online form takes `form_image` and `form_title`. Updating accepts any of those
+four fields. The create and regenerate responses are the only ones that include
+the full `api_key`, `public_key`, and `snippet`.
+
+`overview` returns the entry counts per page and per form group that the
+dashboard tree is built from.
+
+### Keys
+
+| Method | Path |
+| --- | --- |
+| `GET` | `/api/v1/forms/{company_id}/{form_id}/keys` |
+| `POST` | `/api/v1/forms/{company_id}/{form_id}/keys/regenerate` |
+
+`GET` returns key prefixes and the current snippet. `POST` returns a fresh full
+key pair and snippet, and invalidates the previous pair.
+
+### Submissions
+
+| Method | Path |
+| --- | --- |
+| `GET` | `/api/v1/forms/{company_id}/submissions/all` |
+| `GET` | `/api/v1/forms/{company_id}/{form_id}/submissions` |
+| `GET` | `/api/v1/forms/{company_id}/{form_id}/pages/{page_path}/submissions` |
+| `GET` | `/api/v1/forms/{company_id}/{form_id}/pages/{page_path}/forms/{form_identifier}/submissions` |
+| `GET` | `/api/v1/forms/{company_id}/submissions/{submission_id}` |
+| `PUT` | `/api/v1/forms/{company_id}/submissions/{submission_id}/read` |
+| `POST` | `/api/v1/forms/{company_id}/submissions/{submission_id}/reply` |
+| `DELETE` | `/api/v1/forms/{company_id}/submissions/{submission_id}` |
+| `DELETE` | `/api/v1/forms/{company_id}/submissions/bulk` |
+
+List endpoints take `skip` and `limit` for paging, defaulting to `0` and `50`.
+The form-level list also accepts `is_read` to filter the unread queue. Replying
+takes `reply_text` and an optional `subject`. Bulk delete takes
+`{ "submission_ids": [...] }` in the request body.
+
+### Labels and cleanup
+
+| Method | Path |
+| --- | --- |
+| `GET` | `/api/v1/forms/{company_id}/labels` |
+| `PUT` | `/api/v1/forms/{company_id}/websites/label` |
+| `PUT` | `/api/v1/forms/{company_id}/pages/label` |
+| `PUT` | `/api/v1/forms/{company_id}/{form_id}/pages/{page_path}/forms/{form_identifier}/rename` |
+| `DELETE` | `/api/v1/forms/{company_id}/websites?website=` |
+| `DELETE` | `/api/v1/forms/{company_id}/{form_id}/pages/{page_path}` |
+| `DELETE` | `/api/v1/forms/{company_id}/{form_id}/pages/{page_path}/forms/{form_identifier}` |
+
+Website relabelling takes `old_website` and `new_website`. Page relabelling takes
+`website`, `old_page`, and `new_page`. Renaming a form group takes `new_name`.
+
+<Tip>
+  The full, always current schema is published at
+  [api.swiftagents.org/openapi.json](https://api.swiftagents.org/openapi.json).
+  Check it there if a response shape here looks out of date.
+</Tip>
+
+## Submission object
+
+```json
+{
+  "id": "b3c0f8a2-…",
+  "form_id": "6a1e7d94-…",
+  "company_id": "2883e40b-…",
+  "data": { "name": "Jane Doe", "email": "jane@example.com" },
+  "is_read": false,
+  "visitor_id": "3f2a91c4-…",
+  "submitted_at": "2026-07-20T09:14:22Z",
+  "page_url": "https://example.com/contact",
+  "form_identifier": "id:contact-form",
+  "form_name": "Contact us",
+  "submitter_name": "Jane Doe",
+  "submitter_preview": "Please call me back about pricing"
+}
+```
+
+`data` is unconstrained. SwiftAgent stores whatever keys your form produced,
+which means adding a field to your markup needs no configuration change here.

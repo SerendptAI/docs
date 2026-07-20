@@ -1,0 +1,155 @@
+---
+title: "Forms Troubleshooting"
+description: "Fixes for captures that never arrive, land twice, or look wrong."
+---
+
+SwiftForms is deliberately silent when things go wrong, so that a capture
+failure never disturbs a visitor. That makes debugging a matter of checking a
+few specific things rather than reading error messages.
+
+## Nothing arrives in the inbox
+
+Work down this list in order.
+
+<Steps>
+  <Step title="Confirm the script loaded">
+    Open the console and type `SwiftForms`. If it is `undefined`, the script tag
+    did not load. Check the URL for a typo, and check the Network tab for a 404
+    or a blocked request.
+  </Step>
+  <Step title="Confirm init ran">
+    Look for `[SwiftForms] publicKey is required.` in the console. That means
+    `init()` was called without a key and capture never started.
+  </Step>
+  <Step title="Check the script order">
+    `SwiftForms.init()` must run after the `widget.js` tag. If your `init()` call
+    sits in a bundle that executes earlier, or the script tag has `defer` while
+    your call does not, `SwiftForms` will not exist yet.
+  </Step>
+  <Step title="Submit and watch the network">
+    Submit the form and look for a `POST` to
+    `/api/v1/public/forms/widget/submit`. No request means the form is not
+    bound. A request that appears means capture is working and the problem is
+    further along.
+  </Step>
+  <Step title="Check the response status">
+    A `4xx` on that request usually means the public key is wrong, belongs to a
+    different form, or was invalidated by a key regeneration. Copy the key again
+    from the dashboard.
+  </Step>
+</Steps>
+
+## The request never appears
+
+If no `POST` fires at all, the form itself is not bound.
+
+- **The element is not a `<form>`.** SwiftForms binds `<form>` elements only. A
+  `<div>` with a click handler is invisible to it. Wrap the inputs in a real
+  form element.
+- **`data-swift-ignore` is present.** Check the markup, including anything your
+  framework or CMS adds.
+- **The form mounts inside a shadow root.** The `MutationObserver` watches
+  `document.body` and does not descend into shadow DOM. Forms inside a web
+  component are not captured.
+- **The form is in an iframe.** Each document needs its own snippet. Install it
+  inside the iframe's page.
+- **`init()` ran before the form existed and no mutation fired.** This is rare,
+  since the observer catches added nodes, but it can happen if the form is moved
+  rather than added. Re-check that the form is present in the DOM.
+
+## Submissions are missing fields
+
+Field capture keys off the `name` attribute, falling back to `id`. Any input
+with neither is skipped silently.
+
+```html
+<input type="text" placeholder="Your name" />
+
+<input type="text" name="name" placeholder="Your name" />
+```
+
+The first input is invisible to SwiftForms. The second is captured as `name`.
+
+Also check whether the field is one that is
+[never collected](/forms/field-capture#what-is-never-collected): passwords, file
+inputs, buttons, and hidden CSRF tokens are excluded by design.
+
+<Note>
+  Fields rendered outside the `<form>` element and linked with the HTML `form`
+  attribute do appear in `form.elements`, so they are captured normally.
+</Note>
+
+## Values look wrong
+
+| Symptom | Cause |
+| --- | --- |
+| A checkbox reads `[true]` instead of a value | The checkbox has no `value` attribute, so the browser default `"on"` is stored as `true` |
+| A checkbox field is `[]` | The group exists but nothing was checked |
+| A radio field is `null` | The group exists but no option was selected |
+| A field holds an array unexpectedly | Several inputs share that `name`, or the `<select>` has the `multiple` attribute |
+| Two fields collapsed into one | Two inputs share the same `name`, so the later value overwrote the earlier one |
+
+Duplicate `name` attributes are the most common of these. Give each input a
+unique name unless you intend it to be a group.
+
+## Everything is called "Form 1"
+
+The form has no `data-swift-name`, no `title`, no `aria-label`, no heading above
+it, and no `id` or `name`. Add a name:
+
+```html
+<form data-swift-name="Contact us" id="contact-form">
+```
+
+Adding an `id` at the same time is worth doing, because it also gives the form a
+stable [identifier](/forms/field-capture#how-forms-are-identified) so its history
+stays in one group.
+
+## One form appears as several groups in the inbox
+
+The form is falling back to the `index:` identifier, which is its position among
+all forms in the document. Adding a newsletter form above it, or shipping a
+layout change, shifts that index and starts a new group.
+
+Give the form a permanent `id`. Existing groups stay where they are, but
+everything from that point on is grouped consistently.
+
+## The same submission is recorded twice
+
+- **The snippet is on the page twice.** A second `init()` is refused with
+  `[SwiftForms] Already initialised.`, but two copies of `widget.js` on the page
+  can bind independently. Check for a snippet in both your layout and a
+  page-level template.
+- **The form submits twice.** A framework handler that resubmits, or a
+  double-click on a submit button that is not disabled, fires two `submit`
+  events, and each one is captured.
+
+Note that binding itself is safe against duplicates: each form is tracked in a
+`WeakSet`, so re-scanning the DOM never attaches a second listener.
+
+## Nothing arrives after regenerating keys
+
+Regenerating invalidates the previous key pair immediately. Every page still
+running the old public key stops being accepted. Update the snippet everywhere
+it is installed, then submit a test entry to confirm.
+
+## Submissions stopped after a site change
+
+Check these in order:
+
+1. **The snippet survived the deploy.** Templates get rewritten, and a script
+   tag before `</body>` is easy to lose.
+2. **The page path changed.** New submissions group under the new path, so older
+   entries look like they stopped. Look under the new page in the tree.
+3. **The form identifier changed.** A renamed `id`, a changed `action`, or a
+   shifted index starts a new group.
+
+## Still stuck
+
+Capture the following before reaching out, since it makes the cause obvious in
+most cases:
+
+- The page URL, and whether `SwiftForms` is defined in the console
+- The status code of the `POST` to `/api/v1/public/forms/widget/submit`
+- The form's markup, specifically its `id`, `name`, and `action` attributes
+- Your form ID and public key prefix, never the full API key

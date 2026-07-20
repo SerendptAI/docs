@@ -52,6 +52,27 @@
         ]
       },
       {
+        "tab": "Forms",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "forms/overview",
+              "forms/quickstart"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "forms/field-capture",
+              "forms/submissions",
+              "forms/api-reference",
+              "forms/troubleshooting"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "JavaScript API",
         "groups": [
           {
