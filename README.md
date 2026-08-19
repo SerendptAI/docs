@@ -1,6 +1,7 @@
-# SwiftAgent Widget Documentation
+# SwiftAgent Documentation
 
-Mintlify documentation site for the SwiftAgent embeddable chat widget.
+Mintlify documentation site for the SwiftAgent embeddable chat widget, SwiftForms,
+and the `swift_agents_core` Flutter SDK.
 
 ## Preview locally
 
@@ -26,7 +27,9 @@ swiftagent-docs/
 ├── configuration/            # Script attributes, display modes, styling
 ├── features/                 # Chat, file uploads
 ├── guides/                   # Custom triggers, SPA integration, troubleshooting
-└── api/                      # JavaScript API reference
+├── api/                      # JavaScript API reference
+├── forms/                    # SwiftForms tab
+└── sdk/                      # Flutter SDK tab (swift_agents_core)
 ```
 
 ## Editing

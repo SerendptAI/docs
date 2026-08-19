@@ -1,0 +1,110 @@
+---
+title: "User Contexts"
+description: "Initialize the SDK once, then create and reuse a context per user."
+---
+
+The SDK has two levels of state. `SwiftAgentsCore.init()` authenticates your app
+once with your company credentials. A **context** then represents one user's
+conversation, and every `SwiftAgentsView` is bound to exactly one context.
+
+## Initialize once
+
+Call `init()` in `main()`, before `runApp()`. It is asynchronous, so `await` it.
+
+```dart main.dart
+import 'package:flutter/material.dart';
+import 'package:swift_agents_core/swift_agents_core.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await SwiftAgentsCore.init(
+    companyId: 'your_company_id',
+    apiKey: 'your_api_key',
+  );
+
+  runApp(const MyApp());
+}
+```
+
+<Warning>
+  Don't hard-code production credentials in source you ship. Pass them in with
+  `--dart-define` and read them via `String.fromEnvironment`, or load them from
+  your own config, so keys can be rotated without a new build.
+
+  ```dart
+  await SwiftAgentsCore.init(
+    companyId: const String.fromEnvironment('SWIFTAGENTS_COMPANY_ID'),
+    apiKey: const String.fromEnvironment('SWIFTAGENTS_API_KEY'),
+  );
+  ```
+</Warning>
+
+## Create a context
+
+`getContext` takes the user's email and returns their conversation context:
+
+```dart
+final sdkContext = SwiftAgentsCore.getContext(email: 'user@example.com');
+```
+
+The email identifies the user's conversation history, so pass the address you
+already have from your own auth, not a placeholder.
+
+## Reuse a context
+
+Calling `getContext` with the same email returns that user's existing context
+rather than starting a fresh conversation. You can call it wherever you need it,
+including inside a `build` method:
+
+```dart
+class SupportButton extends StatelessWidget {
+  const SupportButton({super.key, required this.userEmail});
+
+  final String userEmail;
+
+  @override
+  Widget build(BuildContext context) {
+    final sdkContext = SwiftAgentsCore.getContext(email: userEmail);
+
+    return IconButton(
+      icon: const Icon(Icons.support_agent),
+      onPressed: () => SwiftAgentsView(sdkContext: sdkContext).show(context),
+    );
+  }
+}
+```
+
+## Multiple users
+
+Apps with account switching can hold a context per user at the same time. Each
+one keeps its own conversation:
+
+```dart
+final sdkContext = SwiftAgentsCore.getContext(email: 'user@example.com');
+final sdkContext2 = SwiftAgentsCore.getContext(email: 'user2@example.com');
+```
+
+Show whichever context matches the account that is currently active:
+
+```dart
+SwiftAgentsView(
+  sdkContext: SwiftAgentsCore.getContext(email: currentUser.email),
+)
+```
+
+<Note>
+  Switching accounts is a matter of which context you pass in. Pass the new
+  user's context and the view shows their conversation, not the previous user's.
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Display modes" icon="window-maximize" href="/sdk/display-modes">
+    Present the view as a sheet or embed it in a screen.
+  </Card>
+  <Card title="API reference" icon="code" href="/sdk/api-reference">
+    Signatures for `init`, `getContext`, and the view.
+  </Card>
+</CardGroup>

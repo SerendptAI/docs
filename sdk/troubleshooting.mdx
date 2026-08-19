@@ -1,0 +1,95 @@
+---
+title: "Troubleshooting"
+description: "Fixes for the most common SDK integration issues."
+---
+
+<AccordionGroup>
+  <Accordion title="SwiftAgentsView fails to load" icon="ghost">
+    - Confirm `SwiftAgentsCore.init()` runs with both a valid **`companyId`**
+      and **`apiKey`**. Without them, the view has nothing to connect to.
+    - Check the values against
+      [Settings → API keys](https://swiftagents.org/en/dashboard/settings/api-keys).
+      A key copied with surrounding whitespace fails the same way a wrong one
+      does.
+    - Make sure `init()` is `await`ed before `runApp()`, and that
+      `WidgetsFlutterBinding.ensureInitialized()` comes first.
+
+    ```dart
+    void main() async {
+      WidgetsFlutterBinding.ensureInitialized();
+      await SwiftAgentsCore.init(companyId: '...', apiKey: '...');
+      runApp(const MyApp());
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Camera or gallery access is blocked" icon="camera">
+    - **Android**: verify every permission in
+      [the manifest setup](/sdk/permissions#android) is declared under the
+      top-level `<manifest>` tag, then do a full rebuild. Manifest changes
+      don't take effect on hot reload.
+    - **iOS**: verify all three usage descriptions are present in
+      `ios/Runner/Info.plist`. A missing description terminates the app when the
+      picker opens rather than showing a prompt.
+    - If you denied a permission earlier during testing, the OS won't ask again.
+      Reset it in system settings or reinstall the app.
+  </Accordion>
+
+  <Accordion title="Uploads fail on the device" icon="file-circle-xmark">
+    - Confirm storage permissions are actually **granted**, not just declared.
+      Declaring a permission in the manifest doesn't grant it at runtime.
+    - On Android 13+ the SDK requests `Permission.photos`. Older devices need
+      `READ_EXTERNAL_STORAGE`, so keep both declared if you support them.
+    - Check the device's network connection. Uploads need `INTERNET` and
+      `ACCESS_NETWORK_STATE` declared in the manifest.
+  </Accordion>
+
+  <Accordion title="Layout overflow when embedding the view" icon="arrows-up-down">
+    `SwiftAgentsView` fills the space it's given. Inside an unbounded parent,
+    such as a `Column` or a `ListView`, it overflows. Give it bounds:
+
+    ```dart
+    Column(
+      children: [
+        const OrderSummary(),
+        Expanded(
+          child: SwiftAgentsView(sdkContext: sdkContext),
+        ),
+      ],
+    )
+    ```
+
+    Using it as a `Scaffold` body needs no wrapper.
+  </Accordion>
+
+  <Accordion title="show() throws or opens nothing" icon="window-maximize">
+    `show()` takes Flutter's `BuildContext`, not the SDK context. Passing
+    `sdkContext` by mistake is the usual cause:
+
+    ```dart
+    SwiftAgentsView(sdkContext: sdkContext).show(context);
+    ```
+
+    The `BuildContext` must also sit under a `Navigator`, so call it from a
+    widget inside your `MaterialApp`, not from `main()`.
+  </Accordion>
+
+  <Accordion title="The wrong user's conversation appears" icon="users">
+    Each context is keyed by email, and the view shows whichever context you
+    pass in. After a user signs out or switches accounts, call
+    `getContext` again with the new address and rebuild the view with that
+    context. See [User contexts](/sdk/contexts).
+  </Accordion>
+
+  <Accordion title="Theme changes don't show up" icon="palette">
+    The view reads `theme` from the widget it was built with. If you compute the
+    theme from the device brightness, rebuild the view when brightness changes,
+    a sheet already on screen keeps the theme it opened with.
+  </Accordion>
+</AccordionGroup>
+
+## Still stuck?
+
+Reach out through your [SwiftAgent dashboard](https://swiftagents.org) with your
+Company ID, the platform you're on, and any console output from
+`flutter run`, and the team can help.

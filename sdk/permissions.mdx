@@ -1,0 +1,103 @@
+---
+title: "Permissions"
+description: "Android manifest and iOS Info.plist entries the SDK requires."
+---
+
+The SDK uses `image_picker` and `file_picker` so users can attach photos and
+files to a conversation. Both packages need platform permissions declared by
+**your app**, not the SDK, so add these entries before shipping.
+
+## Android
+
+Add the permissions under the top-level `<manifest>` tag in
+`android/app/src/main/AndroidManifest.xml`:
+
+```xml android/app/src/main/AndroidManifest.xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Android 13+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <!-- Android 12 and below -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <application
+        android:label="your_app"
+        android:icon="@mipmap/ic_launcher">
+        <!-- your existing activity and metadata -->
+    </application>
+
+</manifest>
+```
+
+### What each permission is for
+
+| Permission | Why the SDK needs it |
+| --- | --- |
+| `INTERNET` | Send messages and uploads to the SwiftAgent API |
+| `ACCESS_NETWORK_STATE` | Detect connectivity changes during a conversation |
+| `CAMERA` | Capture a photo to attach to a message |
+| `READ_MEDIA_IMAGES` | Pick images from the gallery on Android 13+ |
+| `READ_EXTERNAL_STORAGE` | Pick images from storage on Android 12 and below |
+
+<Note>
+  On Android 13+ the SDK requests `Permission.photos`. Keep
+  `READ_EXTERNAL_STORAGE` declared for backward compatibility with older devices
+  in your install base.
+</Note>
+
+<Tip>
+  If your app targets Android 13+ and you want to keep the legacy permission off
+  new devices, scope it with
+  `android:maxSdkVersion="32"` on the `READ_EXTERNAL_STORAGE` entry.
+</Tip>
+
+## iOS
+
+Add the usage descriptions to `ios/Runner/Info.plist`. iOS terminates the app if
+a picker opens without the matching description, so all three are required for
+attachments:
+
+```xml ios/Runner/Info.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>NSCameraUsageDescription</key>
+    <string>SwiftAgents needs camera access to let users capture photos for chat attachments.</string>
+
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>SwiftAgents needs photo library access to let users select images from their gallery.</string>
+
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>SwiftAgents needs permission to save or attach media from the photo library.</string>
+</dict>
+</plist>
+```
+
+| Key | Prompt shown when |
+| --- | --- |
+| `NSCameraUsageDescription` | The user takes a photo to attach |
+| `NSPhotoLibraryUsageDescription` | The user picks an existing image |
+| `NSPhotoLibraryAddUsageDescription` | The app saves or attaches media from the library |
+
+<Warning>
+  Write the usage strings in your own product's voice. App Review rejects
+  generic or placeholder descriptions, and users see them verbatim in the
+  permission prompt.
+</Warning>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/sdk/quickstart">
+    Initialize the SDK and show your first chat.
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/sdk/troubleshooting">
+    Fixes for pickers that don't open and uploads that fail.
+  </Card>
+</CardGroup>

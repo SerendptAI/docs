@@ -1,0 +1,137 @@
+---
+title: "Quickstart"
+description: "Add the SwiftAgent chat to a Flutter app in a few minutes."
+---
+
+This guide takes you from an empty Flutter app to a working chat screen.
+
+## Prerequisites
+
+<Steps>
+  <Step title="Create your account">
+    [Sign up](https://swiftagents.org/en/signup) for SwiftAgent if you haven't
+    already.
+  </Step>
+  <Step title="Get your Company ID and API key">
+    Copy both from
+    [Settings → API keys](https://swiftagents.org/en/dashboard/settings/api-keys).
+    The **Company ID** is a UUID; the **API key** is prefixed `swa_live_…`.
+  </Step>
+</Steps>
+
+## Add the package
+
+```bash
+flutter pub add swift_agents_core
+```
+
+## Grant platform permissions
+
+The SDK uses `image_picker` and `file_picker` for attachments, so your app needs
+camera and photo permissions on both platforms. Add them before you run the app,
+otherwise attachments fail silently on the device.
+
+See [Permissions](/sdk/permissions) for the exact Android manifest and iOS
+`Info.plist` entries to paste in.
+
+## Initialize the SDK
+
+Call `SwiftAgentsCore.init()` in `main()`, before `runApp()`:
+
+```dart main.dart
+import 'package:flutter/material.dart';
+import 'package:swift_agents_core/swift_agents_core.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await SwiftAgentsCore.init(
+    companyId: 'your_company_id',
+    apiKey: 'your_api_key',
+  );
+
+  runApp(const MyApp());
+}
+```
+
+<Warning>
+  `WidgetsFlutterBinding.ensureInitialized()` must come first. `init()` is
+  asynchronous, so `await` it before `runApp()` to be sure the SDK is ready
+  before any screen tries to open the chat.
+</Warning>
+
+## Create a context
+
+A context represents one user's conversation. Create it with the user's email:
+
+```dart
+final sdkContext = SwiftAgentsCore.getContext(email: 'user@example.com');
+```
+
+Calling `getContext` again with the same email reuses that user's existing
+context, so it's safe to call wherever you need it. See
+[User contexts](/sdk/contexts) for multi-user apps.
+
+## Show the chat
+
+Pass the context into `SwiftAgentsView` and present it however suits your app.
+
+<CodeGroup>
+```dart Bottom sheet
+FloatingActionButton(
+  onPressed: () {
+    SwiftAgentsView(
+      sdkContext: sdkContext,
+    ).show(context);
+  },
+  child: const Icon(Icons.chat),
+)
+```
+
+```dart Inline widget
+Scaffold(
+  appBar: AppBar(title: const Text('Support')),
+  body: SwiftAgentsView(
+    sdkContext: sdkContext,
+  ),
+)
+```
+</CodeGroup>
+
+<Tip>
+  `show()` takes Flutter's `BuildContext`, not the SDK context. Naming the SDK
+  one `sdkContext`, as above, keeps the two apart at the call site.
+</Tip>
+
+## Verify it's working
+
+<Steps>
+  <Step title="Run the app on a device or simulator">
+    Attachments need real camera and photo permissions, so test on a device
+    where you can accept the prompts.
+  </Step>
+  <Step title="Open the chat">
+    Tap your button. The chat surface appears with your agent's greeting.
+  </Step>
+  <Step title="Send a message and an image">
+    Type a question, then attach a photo to confirm the permission setup is
+    correct.
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Permissions" icon="lock" href="/sdk/permissions">
+    The full Android and iOS permission setup.
+  </Card>
+  <Card title="Display modes" icon="window-maximize" href="/sdk/display-modes">
+    Bottom sheet vs. embedded widget.
+  </Card>
+  <Card title="Theming" icon="palette" href="/sdk/theming">
+    Match the chat to your app's design.
+  </Card>
+  <Card title="API reference" icon="code" href="/sdk/api-reference">
+    Every class, parameter, and default.
+  </Card>
+</CardGroup>

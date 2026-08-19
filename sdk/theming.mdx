@@ -1,0 +1,175 @@
+---
+title: "Theming"
+description: "Style the chat with light, dark, or fully custom themes."
+---
+
+`SwiftAgentsView` takes an optional `theme`. Pass one of the built-in themes, or
+build your own `SwiftAgentsThemeData` to match your app's palette.
+
+## Built-in themes
+
+<CodeGroup>
+```dart Light
+SwiftAgentsView(
+  sdkContext: sdkContext,
+  theme: SwiftAgentsThemeData.light(),
+)
+```
+
+```dart Dark
+SwiftAgentsView(
+  sdkContext: sdkContext,
+  theme: SwiftAgentsThemeData.dark(),
+)
+```
+</CodeGroup>
+
+Follow the device setting by picking a theme from the ambient brightness:
+
+```dart
+final isDark = Theme.of(context).brightness == Brightness.dark;
+
+SwiftAgentsView(
+  sdkContext: sdkContext,
+  theme: isDark ? SwiftAgentsThemeData.dark() : SwiftAgentsThemeData.light(),
+)
+```
+
+## Custom theme
+
+```dart
+SwiftAgentsView(
+  sdkContext: sdkContext,
+  theme: SwiftAgentsThemeData(
+    sidebarBg: const Color(0xFF4F46E5),
+    userBubble: const Color(0xFF2563EB),
+    agentBubble: const Color(0xFFF3F4F6),
+    background: Colors.white,
+    foreground: Colors.black,
+    border: const Color(0xFFE5E7EB),
+  ),
+)
+```
+
+## Theme properties
+
+<ParamField path="sidebarBg" type="Color">
+  Sidebar background color.
+</ParamField>
+
+<ParamField path="userBubble" type="Color">
+  Background of messages sent by the user.
+</ParamField>
+
+<ParamField path="agentBubble" type="Color">
+  Background of messages sent by the agent.
+</ParamField>
+
+<ParamField path="background" type="Color">
+  Main background color of the chat surface.
+</ParamField>
+
+<ParamField path="foreground" type="Color">
+  Icon color.
+</ParamField>
+
+<ParamField path="border" type="Color">
+  Color of the chat text field and the suggestion chips.
+</ParamField>
+
+<ParamField path="avatar" type="Widget">
+  Custom agent avatar. Any widget, not just an image.
+</ParamField>
+
+<Note>
+  Every property is optional. Anything you leave out keeps the SDK's default,
+  so you can override a single color without redefining the whole palette.
+</Note>
+
+## Custom avatar
+
+`avatar` accepts any widget, so you can use an asset, a network image, an SVG, an
+animation, or the assigned agent's own profile picture.
+
+<CodeGroup>
+```dart Asset image
+SwiftAgentsView(
+  sdkContext: sdkContext,
+  theme: SwiftAgentsThemeData(
+    avatar: const CircleAvatar(
+      backgroundImage: AssetImage(
+        'assets/images/support_agent.png',
+      ),
+    ),
+  ),
+)
+```
+
+```dart Network image
+SwiftAgentsView(
+  sdkContext: sdkContext,
+  theme: SwiftAgentsThemeData(
+    avatar: const CircleAvatar(
+      backgroundImage: NetworkImage(
+        'https://example.com/agent.png',
+      ),
+    ),
+  ),
+)
+```
+
+```dart Any widget
+SwiftAgentsView(
+  sdkContext: sdkContext,
+  theme: SwiftAgentsThemeData(
+    avatar: Container(
+      width: 40,
+      height: 40,
+      decoration: const BoxDecoration(
+        color: Color(0xFF006BE5),
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: const Text(
+        'SA',
+        style: TextStyle(color: Colors.white),
+      ),
+    ),
+  ),
+)
+```
+</CodeGroup>
+
+<Tip>
+  Keep the avatar square and roughly the size of a `CircleAvatar`. Oversized
+  widgets stretch the message row they sit in.
+</Tip>
+
+## Reusing one theme
+
+Define the theme once and share it across every place you show the chat, so a
+palette change lands everywhere at once.
+
+```dart
+final supportTheme = SwiftAgentsThemeData(
+  sidebarBg: const Color(0xFF006BE5),
+  userBubble: const Color(0xFF3D8BFF),
+  agentBubble: const Color(0xFFF3F4F6),
+  background: Colors.white,
+  foreground: Colors.black,
+  border: const Color(0xFFE5E7EB),
+);
+
+SwiftAgentsView(sdkContext: sdkContext, theme: supportTheme).show(context);
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Display modes" icon="window-maximize" href="/sdk/display-modes">
+    Sheet or embedded, both accept a theme.
+  </Card>
+  <Card title="API reference" icon="code" href="/sdk/api-reference">
+    Full signatures for every class.
+  </Card>
+</CardGroup>

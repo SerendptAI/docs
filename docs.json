@@ -84,6 +84,35 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Mobile SDK",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "sdk/introduction",
+              "sdk/quickstart",
+              "sdk/installation"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "sdk/permissions",
+              "sdk/contexts",
+              "sdk/display-modes",
+              "sdk/theming"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "sdk/api-reference",
+              "sdk/troubleshooting"
+            ]
+          }
+        ]
       }
     ]
   },

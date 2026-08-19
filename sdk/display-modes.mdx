@@ -1,0 +1,103 @@
+---
+title: "Display Modes"
+description: "Show the chat as a bottom sheet or embed it as a widget."
+---
+
+`SwiftAgentsView` is an ordinary Flutter widget with one extra convenience:
+calling `.show(context)` presents it as a bottom sheet. Both modes take the same
+`sdkContext` and `theme`, so you can switch between them freely.
+
+## Bottom sheet
+
+Call `.show()` with your `BuildContext` to slide the chat up over the current
+screen. This is the usual choice for a floating support button that shouldn't
+take the user off the page they're on.
+
+```dart
+FloatingActionButton(
+  onPressed: () {
+    SwiftAgentsView(
+      sdkContext: sdkContext,
+    ).show(context);
+  },
+  child: const Icon(Icons.chat),
+)
+```
+
+Any tappable widget works the same way:
+
+```dart
+ListTile(
+  leading: const Icon(Icons.support_agent),
+  title: const Text('Contact support'),
+  onTap: () => SwiftAgentsView(sdkContext: sdkContext).show(context),
+)
+```
+
+<Tip>
+  `show()` takes Flutter's `BuildContext`; `sdkContext` is the SwiftAgent
+  context from `getContext`. Keeping the SDK one named `sdkContext` avoids
+  shadowing `context` and passing the wrong value.
+</Tip>
+
+## Embedded widget
+
+Drop the view straight into your tree when support deserves its own screen or
+tab. Give it a bounded parent, the same as any other scrollable widget.
+
+```dart
+Scaffold(
+  appBar: AppBar(title: const Text('Support')),
+  body: SwiftAgentsView(
+    sdkContext: sdkContext,
+  ),
+)
+```
+
+It also works as a tab:
+
+```dart
+TabBarView(
+  children: [
+    const HomeTab(),
+    SwiftAgentsView(sdkContext: sdkContext),
+  ],
+)
+```
+
+<Warning>
+  Placing the view inside an unbounded parent, such as a `Column` without an
+  `Expanded`, throws a layout overflow. Wrap it in `Expanded`, `SizedBox`, or
+  give it a `Scaffold` body of its own.
+
+  ```dart
+  Column(
+    children: [
+      const OrderSummary(),
+      Expanded(
+        child: SwiftAgentsView(sdkContext: sdkContext),
+      ),
+    ],
+  )
+  ```
+</Warning>
+
+## Choosing a mode
+
+| | Bottom sheet | Embedded widget |
+| --- | --- | --- |
+| How you show it | `.show(context)` | Place in the widget tree |
+| Keeps the current screen | Yes, overlays it | No, occupies its layout slot |
+| Best for | A floating help button anywhere in the app | A dedicated support screen or tab |
+| Dismissal | The sheet's own dismiss gesture | Your own navigation |
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Theming" icon="palette" href="/sdk/theming">
+    Match the chat surface to your app.
+  </Card>
+  <Card title="User contexts" icon="users" href="/sdk/contexts">
+    Bind the right conversation to the view.
+  </Card>
+</CardGroup>

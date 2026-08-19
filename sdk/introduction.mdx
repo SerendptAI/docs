@@ -1,0 +1,76 @@
+---
+title: "Introduction"
+description: "Embed the SwiftAgent AI support agent in your Flutter app for Android and iOS."
+---
+
+**SwiftAgents Core** is the Flutter package that brings the SwiftAgent AI support
+agent into your Android and iOS app. You initialize it once with your company
+credentials, create a context for each user, then render `SwiftAgentsView` either
+as a bottom sheet or as an ordinary widget inside your own layout.
+
+The package ships as `swift_agents_core` and pulls in everything the chat needs,
+including image and file attachment support, so there is no separate UI package
+to wire up.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/sdk/quickstart">
+    Get a working chat into your app in a few minutes.
+  </Card>
+  <Card title="Installation" icon="download" href="/sdk/installation">
+    Add the package and import it.
+  </Card>
+  <Card title="Permissions" icon="lock" href="/sdk/permissions">
+    Required Android manifest and iOS `Info.plist` entries.
+  </Card>
+  <Card title="Theming" icon="palette" href="/sdk/theming">
+    Light, dark, and fully custom themes.
+  </Card>
+</CardGroup>
+
+## What you get
+
+<CardGroup cols={2}>
+  <Card title="AI support chat" icon="comments">
+    A complete chat surface backed by your agent and knowledge base.
+  </Card>
+  <Card title="Per-user contexts" icon="users">
+    Each user gets their own conversation context, keyed by email.
+  </Card>
+  <Card title="Photo & file attachments" icon="paperclip">
+    Users can attach images from the camera, gallery, or file picker.
+  </Card>
+  <Card title="Bottom sheet or inline" icon="window-maximize">
+    Present the chat as a modal sheet or embed it in a screen you own.
+  </Card>
+  <Card title="Themeable" icon="palette">
+    Light, dark, or a custom palette, plus your own agent avatar widget.
+  </Card>
+</CardGroup>
+
+## How it works
+
+<Steps>
+  <Step title="Initialize the SDK">
+    Call `SwiftAgentsCore.init()` in `main()` with your **Company ID** and
+    **API key**. This runs once for the lifetime of the app.
+  </Step>
+  <Step title="Get a context for the user">
+    `SwiftAgentsCore.getContext(email: ...)` returns the conversation context for
+    that user, creating it on first call and reusing it afterwards.
+  </Step>
+  <Step title="Show the view">
+    Pass the context to `SwiftAgentsView`, then either call `.show(context)` to
+    present it as a bottom sheet or place the widget directly in your tree.
+  </Step>
+</Steps>
+
+<Note>
+  You need both a **Company ID** and an **API key** before the SDK will connect.
+  [Sign up](https://swiftagents.org/en/signup), then copy both from
+  [Settings → API keys](https://swiftagents.org/en/dashboard/settings/api-keys).
+</Note>
+
+<Info>
+  Building for the web instead? The [chat widget](/introduction) embeds the same
+  agent on any website with a single script tag.
+</Info>

@@ -1,0 +1,200 @@
+---
+title: "API Reference"
+description: "Every class, method, and parameter in swift_agents_core."
+---
+
+One import exposes the whole public API:
+
+```dart
+import 'package:swift_agents_core/swift_agents_core.dart';
+```
+
+## At a glance
+
+| Member | Signature | Description |
+| --- | --- | --- |
+| `SwiftAgentsCore.init` | `init({companyId, apiKey})` | Authenticate the app, once at startup |
+| `SwiftAgentsCore.getContext` | `getContext({email})` | Create or reuse a user's conversation context |
+| `SwiftAgentsView` | `SwiftAgentsView({sdkContext, theme})` | The chat widget |
+| `SwiftAgentsView.show` | `show(context)` | Present the chat as a bottom sheet |
+| `SwiftAgentsThemeData` | `SwiftAgentsThemeData({...})` | Colors and avatar for the chat |
+| `SwiftAgentsThemeData.light` | `light()` | Built-in light theme |
+| `SwiftAgentsThemeData.dark` | `dark()` | Built-in dark theme |
+
+## SwiftAgentsCore
+
+### init
+
+Initializes the SDK with your company credentials. Call it once in `main()`,
+after `WidgetsFlutterBinding.ensureInitialized()` and before `runApp()`. It is
+asynchronous, so `await` it.
+
+```dart
+await SwiftAgentsCore.init(
+  companyId: 'your_company_id',
+  apiKey: 'your_api_key',
+);
+```
+
+<ParamField path="companyId" type="String" required>
+  Your SwiftAgent **Company ID**, a UUID. Identifies which agent and knowledge
+  base the SDK talks to.
+</ParamField>
+
+<ParamField path="apiKey" type="String" required>
+  Your SwiftAgent **API key**, prefixed `swa_live_…`. Authenticates every chat
+  and upload request.
+</ParamField>
+
+<Note>
+  Both values come from
+  [Settings → API keys](https://swiftagents.org/en/dashboard/settings/api-keys).
+</Note>
+
+### getContext
+
+Returns the conversation context for one user, creating it on the first call and
+reusing it afterwards. Pass the result to `SwiftAgentsView`.
+
+```dart
+final sdkContext = SwiftAgentsCore.getContext(email: 'user@example.com');
+```
+
+<ParamField path="email" type="String" required>
+  The user's email address. Identifies which conversation the context belongs
+  to, so use the address from your own auth rather than a placeholder.
+</ParamField>
+
+## SwiftAgentsView
+
+The chat widget. Render it inline, or call `show()` to present it as a bottom
+sheet.
+
+```dart
+SwiftAgentsView(
+  sdkContext: sdkContext,
+  theme: SwiftAgentsThemeData.light(),
+)
+```
+
+<ParamField path="sdkContext" type="SwiftAgents context" required>
+  The context returned by `SwiftAgentsCore.getContext`. Determines whose
+  conversation the view shows.
+</ParamField>
+
+<ParamField path="theme" type="SwiftAgentsThemeData" default="SDK default theme">
+  Colors and avatar for the chat surface. See [Theming](/sdk/theming).
+</ParamField>
+
+### show
+
+Presents the view as a bottom sheet over the current screen.
+
+```dart
+SwiftAgentsView(sdkContext: sdkContext).show(context);
+```
+
+<ParamField path="context" type="BuildContext" required>
+  Flutter's `BuildContext`, used to locate the navigator that presents the
+  sheet. Not to be confused with `sdkContext`.
+</ParamField>
+
+## SwiftAgentsThemeData
+
+Colors and the agent avatar. Every parameter is optional; omitted values keep
+the SDK default.
+
+```dart
+SwiftAgentsThemeData(
+  sidebarBg: const Color(0xFF4F46E5),
+  userBubble: const Color(0xFF2563EB),
+  agentBubble: const Color(0xFFF3F4F6),
+  background: Colors.white,
+  foreground: Colors.black,
+  border: const Color(0xFFE5E7EB),
+  avatar: const CircleAvatar(
+    backgroundImage: AssetImage('assets/images/support_agent.png'),
+  ),
+)
+```
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `sidebarBg` | `Color` | Sidebar color |
+| `userBubble` | `Color` | User message bubble color |
+| `agentBubble` | `Color` | Agent message bubble color |
+| `background` | `Color` | Main background color |
+| `foreground` | `Color` | Icon color |
+| `border` | `Color` | Chat text field and suggestion chip color |
+| `avatar` | `Widget?` | Optional custom agent avatar |
+
+### light
+
+Built-in light theme.
+
+```dart
+SwiftAgentsView(
+  sdkContext: sdkContext,
+  theme: SwiftAgentsThemeData.light(),
+)
+```
+
+### dark
+
+Built-in dark theme.
+
+```dart
+SwiftAgentsView(
+  sdkContext: sdkContext,
+  theme: SwiftAgentsThemeData.dark(),
+)
+```
+
+## Full example
+
+```dart main.dart
+import 'package:flutter/material.dart';
+import 'package:swift_agents_core/swift_agents_core.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await SwiftAgentsCore.init(
+    companyId: 'your_company_id',
+    apiKey: 'your_api_key',
+  );
+
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(home: HomePage());
+  }
+}
+
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final sdkContext = SwiftAgentsCore.getContext(email: 'user@example.com');
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('My app')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          SwiftAgentsView(
+            sdkContext: sdkContext,
+            theme: SwiftAgentsThemeData.light(),
+          ).show(context);
+        },
+        child: const Icon(Icons.chat),
+      ),
+    );
+  }
+}
+```
