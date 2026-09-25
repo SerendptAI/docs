@@ -38,7 +38,8 @@
             "group": "Features",
             "pages": [
               "features/chat",
-              "features/file-uploads"
+              "features/file-uploads",
+              "features/stroll"
             ]
           },
           {

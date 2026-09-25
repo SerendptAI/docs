@@ -1,0 +1,115 @@
+---
+title: "Stroll (Agent 047)"
+description: "Teach the widget's agent your product, so it can give visitors screenshot-backed directions to any feature."
+---
+
+**Stroll** is the crawler behind **Agent 047**. Give it a sandbox account and the
+URL of your logged-in app, and it signs in, walks through your authenticated
+pages, and uses AI vision to understand what's on each one. The result is a
+navigation map the chat agent draws on to answer "how do I find X?" with a real,
+[annotated screenshot](/features/chat#guided-navigation) instead of a guess.
+
+Stroll can re-run on a schedule to keep that map current, or on demand whenever
+you've shipped changes worth re-crawling.
+
+<Note>
+  Guided navigation answers become available automatically as soon as a Stroll
+  run completes successfully, there's nothing else to turn on.
+</Note>
+
+## Prerequisites
+
+Before you start, create a **dedicated sandbox account** in your own product:
+a login Stroll can use that isn't tied to a real customer or teammate. Stroll
+will be driving a real browser through your authenticated pages, so give it an
+account you're comfortable automating.
+
+## Configure Stroll
+
+Stroll settings live in two equivalent places, edit either one and the change
+shows up immediately in the other:
+
+- **Settings → Stroll** in the dashboard sidebar
+- The **Sandbox** section inside the widget's own settings drawer
+  (**Dashboard → Overview** → your widget card → **Settings**)
+
+<Steps>
+  <Step title="Open Stroll settings">
+    Sign in to the [SwiftAgent dashboard](https://swiftagents.org) and go to
+    **Settings → Stroll** (or open your widget's settings drawer and expand
+    **Sandbox**).
+  </Step>
+  <Step title="Set the Dashboard URL">
+    Enter the **Dashboard URL**: the logged-in page you want Agent 047 to
+    inspect after it signs in, for example `https://app.example.com/home`.
+    This field is required, Stroll has nothing to crawl without it.
+  </Step>
+  <Step title="Set a Login URL (optional)">
+    If your app has a dedicated sign-in page, enter it as the **Login URL**.
+    This is where Agent 047 will enter the sandbox credentials before heading
+    to the Dashboard URL.
+  </Step>
+  <Step title="Add sandbox credentials">
+    Enter the **Email/Username** and **Password** for the sandbox account.
+    Both are required.
+
+    <Warning>
+      Always use a dedicated sandbox account here, never a real customer's
+      login. Stroll signs in and clicks around your product automatically;
+      treat the credentials the same way you would any other automated
+      integration.
+    </Warning>
+  </Step>
+  <Step title="Leave Sandbox mode on">
+    **Sandbox mode** is checked by default and should stay that way. Only turn
+    it off if you specifically intend to point Stroll at production.
+  </Step>
+  <Step title="Save">
+    Save your changes. Stroll now has what it needs to run on its next
+    scheduled pass, or immediately via [Stroll Now](#run-stroll-on-demand).
+  </Step>
+</Steps>
+
+## Advanced options
+
+Advanced options are collapsed by default. Most teams never need to touch them.
+
+<ParamField path="Schedule" type="cron expression" default="0 2 * * * (daily, 2 AM)">
+  How often Stroll automatically re-crawls your product. The dashboard offers
+  presets, hourly, every 6 hours, every 12 hours, daily at midnight, daily at
+  2 AM, daily at 9 AM, weekly on Sunday at midnight, and monthly on the 1st,
+  or you can enter a custom cron expression.
+</ParamField>
+
+<ParamField path="Max pages" type="number" default="50">
+  The crawl limit for a single Stroll run. Stroll follows links breadth-first
+  from your Dashboard URL and stops once it hits this page count.
+</ParamField>
+
+<ParamField path="Pre-auth URL" type="string">
+  An optional URL to visit before the crawl starts, for apps that don't use a
+  plain login form. Use this for products that sign the sandbox account in via
+  an auto-login or token link rather than a username/password form.
+</ParamField>
+
+## Run Stroll on demand
+
+Click **Stroll Now** to trigger an out-of-schedule run right away, useful after
+you've shipped a change worth re-crawling. The button disables for 30 seconds
+after each use to prevent accidental repeat runs.
+
+## Plan limits
+
+Stroll runs are metered by your billing plan rather than gated behind a
+feature flag: every plan includes a monthly allotment of strolls, and higher
+tiers include more. If you're on a plan nearing or at its limit, the dashboard
+shows a usage banner with an option to upgrade. Check your plan's limits page
+in the dashboard for the number that applies to your account.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Chat experience" icon="comments" href="/features/chat">
+    See how guided navigation surfaces Stroll's screenshots to visitors.
+  </Card>
+</CardGroup>
